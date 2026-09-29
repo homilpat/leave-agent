@@ -1,0 +1,4 @@
+[
+  {"employee": "김하나", "day": "2026-10-01", "kind": "leave", "period": "full", "reason": "개인 휴가"},
+  {"employee": "이둘", "day": "2026-10-01", "kind": "trip", "period": "full", "reason": "고객사 현장 미팅", "evidence": true, "evidence_note": "출장 승인 문서 123"}
+]

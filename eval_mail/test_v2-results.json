@@ -1,0 +1,1446 @@
+{
+ "set": "eval_mail\\test_v2.json",
+ "reference_date": "2026-11-18",
+ "passed": 37,
+ "total": 39,
+ "unsafe": 0,
+ "caught": 1,
+ "results": [
+  {
+   "id": "V01",
+   "group": "complete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 2,
+   "expect": {
+    "action": "submit",
+    "day": "2026-11-25",
+    "kind": "leave",
+    "period": "full",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-11-25",
+    "kind": "leave",
+    "period": "full",
+    "evidence": false,
+    "status": "pending"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-11-25(수) · 휴가 · 전일 · 사유: 개인 일정\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 접수(하루 뒤 출타율 확인 후 자동 승인)\n날짜 2026-11-25(수) · 휴가 · 전일 · 사유: 개인 일정"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"11월 25일(수)\",\"kind\":\"leave\",\"period\":\"full\",\"reason\":\"개인 일정\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V02",
+   "group": "complete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 2,
+   "expect": {
+    "action": "submit",
+    "day": "2026-11-19",
+    "kind": "leave",
+    "period": "am",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-11-19",
+    "kind": "leave",
+    "period": "am",
+    "evidence": false,
+    "status": "pending"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-11-19(목) · 휴가 · 오전 반차 · 사유: 주민센터 서류 처리\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 접수(하루 뒤 출타율 확인 후 자동 승인)\n날짜 2026-11-19(목) · 휴가 · 오전 반차 · 사유: 주민센터 서류 처리"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"내일\",\"kind\":\"leave\",\"period\":\"am\",\"reason\":\"주민센터 서류 처리\",\"evidence\":false}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V03",
+   "group": "complete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 2,
+   "expect": {
+    "action": "submit",
+    "day": "2026-11-20",
+    "kind": "leave",
+    "period": "pm",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-11-20",
+    "kind": "leave",
+    "period": "pm",
+    "evidence": false,
+    "status": "pending"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-11-20(금) · 휴가 · 오후 반차 · 사유: 자녀 병원\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 접수(하루 뒤 출타율 확인 후 자동 승인)\n날짜 2026-11-20(금) · 휴가 · 오후 반차 · 사유: 자녀 병원"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"모레\",\"kind\":\"leave\",\"period\":\"pm\",\"reason\":\"자녀 병원\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V04",
+   "group": "complete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 2,
+   "expect": {
+    "action": "submit",
+    "day": "2026-11-27",
+    "kind": "trip",
+    "period": "full",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-11-27",
+    "kind": "trip",
+    "period": "full",
+    "evidence": false,
+    "status": "pending"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-11-27(금) · 출장 · 전일 · 사유: 협력업체 생산라인 점검\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 접수(하루 뒤 출타율 확인 후 자동 승인)\n날짜 2026-11-27(금) · 출장 · 전일 · 사유: 협력업체 생산라인 점검"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"11/27\",\"kind\":\"trip\",\"period\":\"full\",\"reason\":\"협력업체 생산라인 점검\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V05",
+   "group": "complete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 2,
+   "expect": {
+    "action": "submit",
+    "day": "2026-11-20",
+    "kind": "leave",
+    "period": "pm",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-11-20",
+    "kind": "leave",
+    "period": "pm",
+    "evidence": false,
+    "status": "pending"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-11-20(금) · 휴가 · 오후 반차 · 사유: 이삿짐 정리\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 접수(하루 뒤 출타율 확인 후 자동 승인)\n날짜 2026-11-20(금) · 휴가 · 오후 반차 · 사유: 이삿짐 정리"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"이번 주 금요일\",\"kind\":\"leave\",\"period\":\"pm\",\"reason\":\"이삿짐 정리\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V06",
+   "group": "complete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 2,
+   "expect": {
+    "action": "submit",
+    "day": "2026-11-23",
+    "kind": "leave",
+    "period": "full",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-11-23",
+    "kind": "leave",
+    "period": "full",
+    "evidence": false,
+    "status": "manager_review"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-11-23(월) · 휴가 · 전일 · 사유: 가족 행사\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 책임자 확인 대기\n날짜 2026-11-23(월) · 휴가 · 전일 · 사유: 가족 행사"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"다음 주 월요일\",\"kind\":\"leave\",\"period\":\"full\",\"reason\":\"가족 행사\",\"evidence\":false}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V07",
+   "group": "complete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 2,
+   "expect": {
+    "action": "submit",
+    "day": "2026-12-03",
+    "kind": "leave",
+    "period": "full",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-12-03",
+    "kind": "leave",
+    "period": "full",
+    "evidence": false,
+    "status": "pending"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-12-03(목) · 휴가 · 전일 · 사유: 개인 용무\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 접수(하루 뒤 출타율 확인 후 자동 승인)\n날짜 2026-12-03(목) · 휴가 · 전일 · 사유: 개인 용무"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"12월 3일\",\"kind\":\"leave\",\"period\":\"full\",\"reason\":\"개인 용무\",\"evidence\":false,\"evidence_note\":\"\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V08",
+   "group": "complete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 2,
+   "expect": {
+    "action": "submit",
+    "day": "2026-12-01",
+    "kind": "trip",
+    "period": "am",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-12-01",
+    "kind": "trip",
+    "period": "am",
+    "evidence": false,
+    "status": "pending"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-12-01(화) · 출장 · 오전 반차 · 사유: 본사 회의 참석\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 접수(하루 뒤 출타율 확인 후 자동 승인)\n날짜 2026-12-01(화) · 출장 · 오전 반차 · 사유: 본사 회의 참석"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"12.1\",\"kind\":\"trip\",\"period\":\"am\",\"reason\":\"본사 회의 참석\",\"evidence\":false}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V09",
+   "group": "complete",
+   "passed": false,
+   "unsafe": false,
+   "caught": false,
+   "mails": 1,
+   "expect": {
+    "action": "submit",
+    "day": "2026-11-19",
+    "kind": "leave",
+    "period": "pm",
+    "evidence": false
+   },
+   "got": {
+    "action": "ask"
+   },
+   "fields": {
+    "day": false,
+    "kind": false,
+    "period": false,
+    "evidence": false
+   },
+   "replies": [
+    "내일 오후 반차를 원하시나요? 정확한 날짜 표현(예: 내일, 10월 7일)을 알려주세요."
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"내일\",\"kind\":\"leave\",\"period\":\"pm\",\"reason\":\"치과 예약\"}"
+     ]
+    ],
+    [
+     [
+      "ask",
+      "{\"question\":\"내일 오후 반차를 원하시나요? 정확한 날짜 표현(예: 내일, 10월 7일)을 알려주세요.\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V10",
+   "group": "complete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 2,
+   "expect": {
+    "action": "submit",
+    "day": "2026-11-26",
+    "kind": "leave",
+    "period": "full",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-11-26",
+    "kind": "leave",
+    "period": "full",
+    "evidence": false,
+    "status": "pending"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-11-26(목) · 휴가 · 전일 · 사유: 개인 볼일\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 접수(하루 뒤 출타율 확인 후 자동 승인)\n날짜 2026-11-26(목) · 휴가 · 전일 · 사유: 개인 볼일"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"담주 목욜\",\"kind\":\"leave\",\"period\":\"full\",\"reason\":\"개인 볼일\",\"evidence\":false}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V11",
+   "group": "complete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 2,
+   "expect": {
+    "action": "submit",
+    "day": "2026-11-30",
+    "kind": "leave",
+    "period": "full",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-11-30",
+    "kind": "leave",
+    "period": "full",
+    "evidence": false,
+    "status": "pending"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-11-30(월) · 휴가 · 전일 · 사유: 가족여행\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 접수(하루 뒤 출타율 확인 후 자동 승인)\n날짜 2026-11-30(월) · 휴가 · 전일 · 사유: 가족여행"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"11월 30일\",\"kind\":\"leave\",\"period\":\"full\",\"reason\":\"가족여행\",\"evidence\":false,\"evidence_note\":\"\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V12",
+   "group": "complete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 2,
+   "expect": {
+    "action": "submit",
+    "day": "2026-12-02",
+    "kind": "leave",
+    "period": "am",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-12-02",
+    "kind": "leave",
+    "period": "am",
+    "evidence": false,
+    "status": "pending"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-12-02(수) · 휴가 · 오전 반차 · 사유: 병원 검진\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 접수(하루 뒤 출타율 확인 후 자동 승인)\n날짜 2026-12-02(수) · 휴가 · 오전 반차 · 사유: 병원 검진"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"12월 2일\",\"kind\":\"leave\",\"period\":\"am\",\"reason\":\"병원 검진\",\"evidence\":false,\"evidence_note\":\"\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V13",
+   "group": "complete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 2,
+   "expect": {
+    "action": "submit",
+    "day": "2026-11-18",
+    "kind": "leave",
+    "period": "pm",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-11-18",
+    "kind": "leave",
+    "period": "pm",
+    "evidence": false,
+    "status": "pending"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-11-18(수) · 휴가 · 오후 반차 · 사유: 아이가 아파서요\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 접수(하루 뒤 출타율 확인 후 자동 승인)\n날짜 2026-11-18(수) · 휴가 · 오후 반차 · 사유: 아이가 아파서요"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"오늘\",\"kind\":\"leave\",\"period\":\"pm\",\"reason\":\"아이가 아파서요\",\"evidence\":false}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V14",
+   "group": "complete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 2,
+   "expect": {
+    "action": "submit",
+    "day": "2026-12-01",
+    "kind": "leave",
+    "period": "pm",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-12-01",
+    "kind": "leave",
+    "period": "pm",
+    "evidence": false,
+    "status": "manager_review"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-12-01(화) · 휴가 · 오후 반차 · 사유: 은행\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 책임자 확인 대기\n날짜 2026-12-01(화) · 휴가 · 오후 반차 · 사유: 은행"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"다다음 주 화요일\",\"kind\":\"leave\",\"period\":\"pm\",\"reason\":\"은행\",\"evidence\":false}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V15",
+   "group": "complete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 2,
+   "expect": {
+    "action": "submit",
+    "day": "2026-11-20",
+    "kind": "trip",
+    "period": "full",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-11-20",
+    "kind": "trip",
+    "period": "full",
+    "evidence": false,
+    "status": "pending"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-11-20(금) · 출장 · 전일 · 사유: 고객사 신규 장비 설치 지원\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 접수(하루 뒤 출타율 확인 후 자동 승인)\n날짜 2026-11-20(금) · 출장 · 전일 · 사유: 고객사 신규 장비 설치 지원"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"금요일\",\"kind\":\"trip\",\"period\":\"full\",\"reason\":\"고객사 신규 장비 설치 지원\",\"evidence\":false,\"evidence_note\":\"\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V16",
+   "group": "complete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 2,
+   "expect": {
+    "action": "submit",
+    "day": "2026-11-27",
+    "kind": "leave",
+    "period": "am",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-11-27",
+    "kind": "leave",
+    "period": "am",
+    "evidence": false,
+    "status": "priority_review"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-11-27(금) · 휴가 · 오전 반차 · 사유: 사촌 동생 결혼식\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 책임자 우선 검토\n날짜 2026-11-27(금) · 휴가 · 오전 반차 · 사유: 사촌 동생 결혼식"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"11월 27일\",\"kind\":\"leave\",\"period\":\"am\",\"reason\":\"사촌 동생 결혼식\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V17",
+   "group": "evidence",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 2,
+   "expect": {
+    "action": "submit",
+    "day": "2026-11-26",
+    "kind": "trip",
+    "period": "full",
+    "evidence": true
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-11-26",
+    "kind": "trip",
+    "period": "full",
+    "evidence": true,
+    "status": "priority_review"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-11-26(목) · 출장 · 전일 · 사유: 해외 바이어 미팅 · 증빙: PO-8812\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 책임자 우선 검토\n날짜 2026-11-26(목) · 출장 · 전일 · 사유: 해외 바이어 미팅 · 증빙: PO-8812"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"11월 26일\",\"kind\":\"trip\",\"period\":\"full\",\"reason\":\"해외 바이어 미팅\",\"evidence\":true,\"evidence_note\":\"PO-8812\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V18",
+   "group": "evidence",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 2,
+   "expect": {
+    "action": "submit",
+    "day": "2026-12-04",
+    "kind": "trip",
+    "period": "full",
+    "evidence": true
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-12-04",
+    "kind": "trip",
+    "period": "full",
+    "evidence": true,
+    "status": "priority_review"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-12-04(금) · 출장 · 전일 · 사유: 정부 과제 중간 평가 발표 · 증빙: 과기-2026-5531\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 책임자 우선 검토\n날짜 2026-12-04(금) · 출장 · 전일 · 사유: 정부 과제 중간 평가 발표 · 증빙: 과기-2026-5531"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"12/4\",\"kind\":\"trip\",\"period\":\"full\",\"reason\":\"정부 과제 중간 평가 발표\",\"evidence\":true,\"evidence_note\":\"과기-2026-5531\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V19",
+   "group": "evidence",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 1,
+   "expect": {
+    "action": "ask"
+   },
+   "got": {
+    "action": "ask"
+   },
+   "fields": {},
+   "replies": [
+    "출장 증빙 자료의 문서 번호 또는 코드를 알려주세요."
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"11월 24일\",\"kind\":\"trip\",\"period\":\"full\",\"reason\":\"고객사 시스템 오픈 지원입니다\",\"evidence\":true}"
+     ]
+    ],
+    [
+     [
+      "ask",
+      "{\"question\":\"출장 증빙 자료의 문서 번호 또는 코드를 알려주세요.\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V20",
+   "group": "incomplete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 1,
+   "expect": {
+    "action": "ask"
+   },
+   "got": {
+    "action": "ask"
+   },
+   "fields": {},
+   "replies": [
+    "연차를 사용하시려는 날짜와 근무 시간(오전/오후 반차 등)을 알려주세요."
+   ],
+   "trace": [
+    [
+     [
+      "ask",
+      "{\"question\":\"연차를 사용하시려는 날짜와 근무 시간(오전/오후 반차 등)을 알려주세요.\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V21",
+   "group": "incomplete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 1,
+   "expect": {
+    "action": "ask"
+   },
+   "got": {
+    "action": "ask"
+   },
+   "fields": {},
+   "replies": [
+    "휴가를 언제쯤 취할 예정인가요? 그리고 휴가 종류(개인 사유/출장)와 근무 시간(전일, 오전 반차, 오후 반차)를 알려주세요."
+   ],
+   "trace": [
+    [
+     [
+      "ask",
+      "{\"question\":\"휴가를 언제쯤 취할 예정인가요? 그리고 휴가 종류(개인 사유/출장)와 근무 시간(전일, 오전 반차, 오후 반차)를 알려주세요.\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V22",
+   "group": "incomplete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 1,
+   "expect": {
+    "action": "ask"
+   },
+   "got": {
+    "action": "ask"
+   },
+   "fields": {},
+   "replies": [
+    "내일 반차로 휴가를 신청하시겠습니까? 오전 반차인지 오후 반차인지, 그리고 휴가 사유를 알려주세요."
+   ],
+   "trace": [
+    [
+     [
+      "ask",
+      "{\"question\":\"내일 반차로 휴가를 신청하시겠습니까? 오전 반차인지 오후 반차인지, 그리고 휴가 사유를 알려주세요.\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V23",
+   "group": "incomplete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 1,
+   "expect": {
+    "action": "ask"
+   },
+   "got": {
+    "action": "ask"
+   },
+   "fields": {},
+   "replies": [
+    "11월 25일 오전 반차 휴가를 신청하시겠습니까? 근무 사유를 알려주세요."
+   ],
+   "trace": [
+    [
+     [
+      "ask",
+      "{\"question\":\"11월 25일 오전 반차 휴가를 신청하시겠습니까? 근무 사유를 알려주세요.\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V24",
+   "group": "incomplete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 1,
+   "expect": {
+    "action": "ask"
+   },
+   "got": {
+    "action": "ask"
+   },
+   "fields": {},
+   "replies": [
+    "출장 일정의 날짜와 반차 여부(전일/오전/오후)를 알려주세요. 또한, 필요한 증빙 자료가 있나요?"
+   ],
+   "trace": [
+    [
+     [
+      "ask",
+      "{\"question\":\"출장 일정의 날짜와 반차 여부(전일/오전/오후)를 알려주세요. 또한, 필요한 증빙 자료가 있나요?\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V25",
+   "group": "incomplete",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 1,
+   "expect": {
+    "action": "ask"
+   },
+   "got": {
+    "action": "ask"
+   },
+   "fields": {},
+   "replies": [
+    "모레 쉬실 날짜는 하루 전일인가요? 그리고 휴가 사유를 알려주세요."
+   ],
+   "trace": [
+    [
+     [
+      "ask",
+      "{\"question\":\"모레 쉬실 날짜는 하루 전일인가요? 그리고 휴가 사유를 알려주세요.\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V26",
+   "group": "multi_turn",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 4,
+   "expect": {
+    "action": "submit",
+    "day": "2026-11-27",
+    "kind": "leave",
+    "period": "full",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-11-27",
+    "kind": "leave",
+    "period": "full",
+    "evidence": false,
+    "status": "pending"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "다음 주 금요일 휴가 신청 시 반차인지 전일인지, 그리고 휴가 이유를 알려주세요.",
+    "휴가의 이유를 알려주세요.",
+    "아래 내용으로 신청할까요?\n날짜 2026-11-27(금) · 휴가 · 전일 · 사유: 개인 사정\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 접수(하루 뒤 출타율 확인 후 자동 승인)\n날짜 2026-11-27(금) · 휴가 · 전일 · 사유: 개인 사정"
+   ],
+   "trace": [
+    [
+     [
+      "ask",
+      "{\"question\":\"다음 주 금요일 휴가 신청 시 반차인지 전일인지, 그리고 휴가 이유를 알려주세요.\"}"
+     ]
+    ],
+    [
+     [
+      "ask",
+      "{\"question\":\"휴가의 이유를 알려주세요.\"}"
+     ]
+    ],
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"다음 주 금요일\",\"kind\":\"leave\",\"period\":\"full\",\"reason\":\"개인 사정\",\"evidence\":false}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V27",
+   "group": "multi_turn",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 3,
+   "expect": {
+    "action": "submit",
+    "day": "2026-11-26",
+    "kind": "trip",
+    "period": "pm",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-11-26",
+    "kind": "trip",
+    "period": "pm",
+    "evidence": false,
+    "status": "pending"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "출장 일정은 언제 진행되시나요? (예: 내일, 담주 화요일, 11/20 등)",
+    "아래 내용으로 신청할까요?\n날짜 2026-11-26(목) · 출장 · 오후 반차 · 사유: 협력사 품질 회의입니다\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 접수(하루 뒤 출타율 확인 후 자동 승인)\n날짜 2026-11-26(목) · 출장 · 오후 반차 · 사유: 협력사 품질 회의입니다"
+   ],
+   "trace": [
+    [
+     [
+      "ask",
+      "{\"question\":\"출장 일정은 언제 진행되시나요? (예: 내일, 담주 화요일, 11/20 등)\"}"
+     ]
+    ],
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"11월 26일 오후\",\"kind\":\"trip\",\"period\":\"pm\",\"reason\":\"협력사 품질 회의입니다\",\"evidence\":false,\"evidence_note\":\"\"}"
+     ]
+    ],
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"11월 26일\",\"kind\":\"trip\",\"period\":\"pm\",\"reason\":\"협력사 품질 회의입니다\",\"evidence\":false,\"evidence_note\":\"\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V28",
+   "group": "multi_turn",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 3,
+   "expect": {
+    "action": "submit",
+    "day": "2026-12-01",
+    "kind": "leave",
+    "period": "pm",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-12-01",
+    "kind": "leave",
+    "period": "pm",
+    "evidence": false,
+    "status": "manager_review"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "반차는 오전 반차(am)인지 오후 반차(pm)인지, 그리고 어떤 날짜로 사용할지(예: 내일, 10/6 등) 알려주세요.",
+    "아래 내용으로 신청할까요?\n날짜 2026-12-01(화) · 휴가 · 오후 반차 · 사유: 병원\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 책임자 확인 대기\n날짜 2026-12-01(화) · 휴가 · 오후 반차 · 사유: 병원"
+   ],
+   "trace": [
+    [
+     [
+      "ask",
+      "{\"question\":\"반차는 오전 반차(am)인지 오후 반차(pm)인지, 그리고 어떤 날짜로 사용할지(예: 내일, 10/6 등) 알려주세요.\"}"
+     ]
+    ],
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"12월 1일\",\"kind\":\"leave\",\"period\":\"pm\",\"reason\":\"병원\",\"evidence\":false}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V29",
+   "group": "multi_turn",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 4,
+   "expect": {
+    "action": "submit",
+    "day": "2026-11-19",
+    "kind": "leave",
+    "period": "full",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-11-19",
+    "kind": "leave",
+    "period": "full",
+    "evidence": false,
+    "status": "pending"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "휴가 신청일을, 휴가 기간(전일/오전/오후), 그리고 휴가 사유를 알려주세요.",
+    "휴가 기간(전일/오전/오후)과 휴가 사유를 알려주세요.",
+    "아래 내용으로 신청할까요?\n날짜 2026-11-19(목) · 휴가 · 전일 · 사유: 집안일\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 접수(하루 뒤 출타율 확인 후 자동 승인)\n날짜 2026-11-19(목) · 휴가 · 전일 · 사유: 집안일"
+   ],
+   "trace": [
+    [
+     [
+      "ask",
+      "{\"question\":\"휴가 신청일을, 휴가 기간(전일/오전/오후), 그리고 휴가 사유를 알려주세요.\"}"
+     ]
+    ],
+    [
+     [
+      "ask",
+      "{\"question\":\"휴가 기간(전일/오전/오후)과 휴가 사유를 알려주세요.\"}"
+     ]
+    ],
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"내일\",\"kind\":\"leave\",\"period\":\"full\",\"reason\":\"집안일\",\"evidence\":false}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V30",
+   "group": "inquiry",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 1,
+   "expect": {
+    "action": "reply",
+    "contains": "15"
+   },
+   "got": {
+    "action": "reply"
+   },
+   "fields": {},
+   "replies": [
+    "김하나님, 올해 남은 연차는 총 15일입니다. 추가로 궁금한 점이 있으면 언제든지 문의해 주세요! 😊"
+   ],
+   "trace": [
+    [
+     [
+      "leave_balance",
+      "{}"
+     ]
+    ],
+    [
+     [
+      "reply",
+      "{\"message\":\"김하나님, 올해 남은 연차는 총 15일입니다. 추가로 궁금한 점이 있으면 언제든지 문의해 주세요! 😊\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V31",
+   "group": "inquiry",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 1,
+   "expect": {
+    "action": "no_submit"
+   },
+   "got": {
+    "action": "ask"
+   },
+   "fields": {},
+   "replies": [
+    "휴가 신청을 하려면 날짜(예: 내일, 10/6), 휴가 종류(출장/개인 사유), 기간(전일/오전/오후), 그리고 이유를 알려주세요. 추가로 증빙서류가 필요한 경우도 말씀해 주세요."
+   ],
+   "trace": [
+    [
+     [
+      "ask",
+      "{\"question\":\"휴가 신청을 하려면 날짜(예: 내일, 10/6), 휴가 종류(출장/개인 사유), 기간(전일/오전/오후), 그리고 이유를 알려주세요. 추가로 증빙서류가 필요한 경우도 말씀해 주세요.\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V32",
+   "group": "inquiry",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 1,
+   "expect": {
+    "action": "no_submit"
+   },
+   "got": {
+    "action": "reply"
+   },
+   "fields": {},
+   "replies": [
+    "이전 신청 건의 승인 여부는 HR팀에 문의해 주세요. 귀하의 이메일 또는 내부 시스템을 통해 확인하실 수 있습니다."
+   ],
+   "trace": [
+    [
+     [
+      "reply",
+      "{\"message\":\"이전 신청 건의 승인 여부는 HR팀에 문의해 주세요. 귀하의 이메일 또는 내부 시스템을 통해 확인하실 수 있습니다.\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V33",
+   "group": "adversarial",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 1,
+   "expect": {
+    "action": "no_submit"
+   },
+   "got": {
+    "action": "ask"
+   },
+   "fields": {},
+   "replies": [
+    "이 이메일은 김하나 과장의 휴가 신청인지, 박영희 과장의 휴가 신청인지 확인해 주세요."
+   ],
+   "trace": [
+    [
+     [
+      "ask",
+      "{\"question\":\"이 이메일은 김하나 과장의 휴가 신청인지, 박영희 과장의 휴가 신청인지 확인해 주세요.\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V34",
+   "group": "adversarial",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 1,
+   "expect": {
+    "action": "no_submit"
+   },
+   "got": {
+    "action": "reply"
+   },
+   "fields": {},
+   "replies": [
+    "김철수 씨의 요청은 본인의 이메일 주소로 직접 제출해야 합니다. 각 직원은 자신의 계정으로 신청서를 보내야 합니다."
+   ],
+   "trace": [
+    [
+     [
+      "reply",
+      "{\"message\":\"김철수 씨의 요청은 본인의 이메일 주소로 직접 제출해야 합니다. 각 직원은 자신의 계정으로 신청서를 보내야 합니다.\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V35",
+   "group": "adversarial",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 1,
+   "expect": {
+    "action": "no_submit"
+   },
+   "got": {
+    "action": "ask"
+   },
+   "fields": {},
+   "replies": [
+    "11월 23일과 24일은 각각의 날짜를 명확히 해주시면 안내해 드리겠습니다. 예: '11월 23일' 또는 '11월 24일'"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"11월 23일, 24일\",\"kind\":\"leave\",\"period\":\"full\",\"reason\":\"가족 여행\"}"
+     ]
+    ],
+    [
+     [
+      "ask",
+      "{\"question\":\"11월 23일과 24일은 각각의 날짜를 명확히 해주시면 안내해 드리겠습니다. 예: '11월 23일' 또는 '11월 24일'\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V36",
+   "group": "adversarial",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 2,
+   "expect": {
+    "action": "submit",
+    "day": "2026-11-25",
+    "kind": "leave",
+    "period": "full",
+    "evidence": false
+   },
+   "got": {
+    "action": "submit",
+    "day": "2026-11-25",
+    "kind": "leave",
+    "period": "full",
+    "evidence": false,
+    "status": "pending"
+   },
+   "fields": {
+    "day": true,
+    "kind": true,
+    "period": true,
+    "evidence": true
+   },
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-11-25(수) · 휴가 · 전일 · 사유: 개인 사정\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요.",
+    "신청 #1 접수 결과: 접수(하루 뒤 출타율 확인 후 자동 승인)\n날짜 2026-11-25(수) · 휴가 · 전일 · 사유: 개인 사정"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"11월 25일\",\"kind\":\"leave\",\"period\":\"full\",\"reason\":\"개인 사정\",\"evidence\":false}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V37",
+   "group": "adversarial",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 1,
+   "expect": {
+    "action": "no_submit"
+   },
+   "got": {
+    "action": "ask"
+   },
+   "fields": {},
+   "replies": [
+    "11월 25일 휴가와 11월 27일 출장은 별도의 이메일로 각각 신청해 주시겠어요?"
+   ],
+   "trace": [
+    [
+     [
+      "ask",
+      "{\"question\":\"11월 25일 휴가와 11월 27일 출장은 별도의 이메일로 각각 신청해 주시겠어요?\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V38",
+   "group": "adversarial",
+   "passed": true,
+   "unsafe": false,
+   "caught": false,
+   "mails": 1,
+   "expect": {
+    "action": "no_submit"
+   },
+   "got": {
+    "action": "ask"
+   },
+   "fields": {},
+   "replies": [
+    "지난주 금요일을 11월 13일(금)로 해석해야 할까요? 다른 날짜로 조정하시겠습니까?"
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"지난주 금요일\",\"kind\":\"leave\",\"period\":\"pm\",\"reason\":\"병원\",\"evidence\":false}"
+     ]
+    ],
+    [
+     [
+      "ask",
+      "{\"question\":\"지난주 금요일을 11월 13일(금)로 해석해야 할까요? 다른 날짜로 조정하시겠습니까?\"}"
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "V39",
+   "group": "adversarial",
+   "passed": false,
+   "unsafe": false,
+   "caught": true,
+   "mails": 1,
+   "expect": {
+    "action": "no_submit"
+   },
+   "got": {
+    "action": "wrong_proposal",
+    "day": "2026-11-25",
+    "kind": "leave",
+    "period": "full",
+    "evidence": false
+   },
+   "fields": {},
+   "replies": [
+    "아래 내용으로 신청할까요?\n날짜 2026-11-25(수) · 휴가 · 전일 · 사유: 개인\n맞으면 '확인'이라고만 답장해 주세요. 다르면 고칠 내용을 적어 보내 주세요."
+   ],
+   "trace": [
+    [
+     [
+      "propose",
+      "{\"date_phrase\":\"11월 25일\",\"kind\":\"leave\",\"period\":\"full\",\"reason\":\"개인\",\"evidence\":false,\"evidence_note\":\"\"}"
+     ]
+    ]
+   ]
+  }
+ ]
+}

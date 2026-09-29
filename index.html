@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>휴가 및 출장 처리</title>
+  <style>
+    :root{font-family:"Pretendard","Malgun Gothic",system-ui,sans-serif;color:#172337;background:#f3f6fa;font-size:16px}
+    *{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit}button{cursor:pointer}
+    .shell{max-width:1440px;margin:auto;padding:30px 32px 64px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:24px}
+    .eyebrow{font-size:.78rem;font-weight:800;color:#537393;letter-spacing:.15em;margin:0 0 6px}.top h1{margin:0;font-size:2rem;letter-spacing:-.06em}.top p:last-child{margin:8px 0 0;color:#627187}
+    .model{display:flex;align-items:center;gap:9px;background:white;border:1px solid #dce5ee;border-radius:100px;padding:10px 15px;font-size:.88rem;box-shadow:0 4px 18px #17233708;max-width:360px}
+    .dot{width:9px;height:9px;border-radius:50%;background:#c6ced9;flex:none}.model.ok .dot{background:#20a877}.model.bad .dot{background:#e57958}.model span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}.stat{background:#fff;border:1px solid #dce5ee;border-radius:16px;padding:18px 20px}.stat small{color:#63738a;font-weight:700}.stat strong{display:block;margin-top:8px;font-size:1.75rem;letter-spacing:-.06em}.stat:nth-child(2) strong{color:#166db3}.stat:nth-child(3) strong{color:#ba6d20}
+    .grid{display:grid;grid-template-columns:minmax(340px,420px) minmax(0,1fr);gap:20px;align-items:start}.stack{display:grid;gap:20px}.card{background:#fff;border:1px solid #dce5ee;border-radius:18px;box-shadow:0 6px 28px #17233708;overflow:hidden}.cardhead{padding:20px 22px 15px;border-bottom:1px solid #edf1f5;display:flex;justify-content:space-between;align-items:baseline;gap:12px}.card h2{font-size:1.08rem;letter-spacing:-.03em;margin:0}.cardhead span{color:#718199;font-size:.82rem}.body{padding:20px 22px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:13px}.field{display:grid;gap:6px}.field.wide{grid-column:1/-1}label{font-size:.88rem;font-weight:700;color:#45566e}input,select,textarea{width:100%;background:#fff;border:1px solid #cbd6e3;border-radius:9px;padding:10px 11px;color:#172337;min-height:43px}textarea{resize:vertical;min-height:82px}input:focus,select:focus,textarea:focus{outline:2px solid #7db5e9;border-color:#388fd0}input[type=checkbox]{width:18px;min-height:18px;accent-color:#1d6da7}.check{display:flex;align-items:center;gap:9px;margin:15px 0;font-weight:500}.check label{font-weight:500}
+    .actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px}.primary,.secondary,.mini{border-radius:9px;border:1px solid transparent;font-weight:750;padding:10px 14px}.primary{background:#136da8;color:white}.primary:hover{background:#0a5687}.secondary{background:#eef4fa;color:#1c618f;border-color:#d5e4f0}.secondary:hover{background:#dfeefa}.mini{font-size:.78rem;padding:6px 9px;background:#eef4fa;color:#225b83;border-color:#dce8f1}.mini:hover{background:#dbeaf6}.mini.warn{background:#fff0e9;color:#a65a2d;border-color:#f4dacd}.mini:disabled{opacity:.5;cursor:wait}.queue{display:grid;gap:7px;margin-top:15px}.queueitem{background:#f4f8fc;border:1px solid #e3edf5;border-radius:9px;padding:9px 11px;font-size:.87rem;display:flex;justify-content:space-between;gap:10px}.empty{color:#7a889b;font-size:.9rem}.setup{display:grid;gap:15px}.inline{display:grid;grid-template-columns:1fr 95px auto;gap:8px;align-items:end}.inline.employee{grid-template-columns:1fr 1fr 95px auto}.inline .field{min-width:0}.divider{border-top:1px solid #e8edf3}.hint{font-size:.8rem;color:#718199;margin:10px 0 0;line-height:1.5}
+    .toolbar{padding:14px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px}.toolbar select{max-width:180px;min-height:36px;padding:5px 9px;font-size:.85rem}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:780px}th{text-align:left;background:#f8fafc;color:#697991;font-size:.78rem;font-weight:800;white-space:nowrap}th,td{padding:12px 16px;border-top:1px solid #e9eef4}td{font-size:.87rem}td .sub{color:#718199;font-size:.75rem;margin-top:4px}.badge{display:inline-block;font-size:.76rem;font-weight:800;padding:5px 8px;border-radius:99px;white-space:nowrap}.approved{background:#e3f6ee;color:#087249}.manager_review,.priority_review{background:#fff1dd;color:#98600d}.offered{background:#e5f0ff;color:#286ca6}.rejected,.canceled{background:#f0f2f5;color:#687585}.rowactions{display:flex;gap:5px;white-space:nowrap}.notice{padding:12px 0;border-top:1px solid #edf1f5;font-size:.87rem}.notice:first-child{border:0;padding-top:0}.notice b{color:#235e8b}.notice time{color:#8a98a9;font-size:.76rem;display:block;margin-top:3px}.toast{position:fixed;right:22px;bottom:22px;max-width:400px;background:#20324a;color:white;padding:13px 17px;border-radius:10px;box-shadow:0 12px 30px #17233735;z-index:5}.toast.error{background:#a8433b}[hidden]{display:none!important}
+    .req{color:#be4b44}.selected-dept{display:block;min-height:35px;padding:7px 2px;color:#526985}.proofnote{color:#8c5f22;font-size:.78rem;line-height:1.4;max-width:160px}.prooflink{font-size:.78rem;color:#166da7;margin-right:6px}
+    .tabs{display:flex;gap:6px;border-bottom:1px solid #dce5ee;margin:-4px 0 26px;overflow:auto}.tabs a{display:block;white-space:nowrap;padding:12px 18px;color:#5d7087;text-decoration:none;font-weight:750;border-bottom:3px solid transparent}.tabs a:hover{color:#1a6da5}.tabs a.active{color:#116ca7;border-bottom-color:#116ca7}.sectionheading{margin:0 0 20px}.sectionheading h2{margin:0;font-size:1.48rem;letter-spacing:-.04em}.sectionheading p{margin:6px 0 0;color:#65778c}.homechoices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:24px}.choice{display:grid;gap:12px;align-content:start;min-height:200px;background:#fff;border:1px solid #dce5ee;border-radius:18px;padding:24px;text-decoration:none;color:#1b2d43;box-shadow:0 6px 28px #17233708}.choice:hover{border-color:#8db9da;transform:translateY(-2px)}.choiceicon{font-size:.84rem;font-weight:900;color:#1874ae}.choice strong{font-size:1.35rem;letter-spacing:-.04em}.choice span:not(.choiceicon){color:#65778c}.choice b{color:#126da7;margin-top:auto}.applylayout{display:grid;grid-template-columns:minmax(380px,700px) minmax(290px,1fr);gap:20px;align-items:start}.managergrid{display:grid;grid-template-columns:minmax(0,2fr) minmax(330px,1fr);gap:20px;align-items:start}.mineitem{padding:12px 0;border-top:1px solid #e9eef4}.mineitem:first-child{border-top:0;padding-top:0}.mineitem .meta{color:#6b7b8f;font-size:.8rem;margin-top:5px}
+    @media(max-width:1050px){.applylayout,.managergrid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:600px){.shell{padding:20px 14px 40px}.top{display:block}.model{margin-top:16px}.stats{gap:8px}.stat{padding:15px}.stat strong{font-size:1.4rem}.homechoices{grid-template-columns:1fr}.choice{min-height:160px}.fields{grid-template-columns:1fr 1fr}.inline,.inline.employee{grid-template-columns:1fr 1fr}.inline button{grid-column:1/-1}.cardhead,.body,.toolbar{padding-left:16px;padding-right:16px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="top"><div><p class="eyebrow">LOCAL DEMO</p><h1>휴가 및 출장 처리</h1><p>신청 접수부터 출타율 판단, 책임자 결재까지</p></div><div id="model" class="model"><i class="dot"></i><span>LM Studio 확인 중</span></div></header>
+    <nav class="tabs" aria-label="페이지 이동"><a href="/" data-nav="home">메인</a><a href="/apply" data-nav="apply">신청 페이지</a><a href="/manager" data-nav="manager">담당자 페이지</a></nav>
+    <section id="view-home" class="view">
+      <div class="sectionheading"><h2>처리 현황</h2><p>신청과 결재 진행 상황을 확인하세요.</p></div>
+    <section class="stats" aria-label="처리 현황"><div class="stat"><small>전체 신청</small><strong id="count-all">0</strong></div><div class="stat"><small>승인</small><strong id="count-approved">0</strong></div><div class="stat"><small>책임자 확인</small><strong id="count-review">0</strong></div><div class="stat"><small>응답 대기</small><strong id="count-offered">0</strong></div></section>
+      <div class="homechoices">
+        <a class="choice" href="/apply"><span class="choiceicon">01</span><strong>신청 페이지</strong><span>휴가·출장 신청서를 작성하고 상태를 확인합니다.</span><b>신청하러 가기 →</b></a>
+        <a class="choice" href="/manager"><span class="choiceicon">02</span><strong>담당자 페이지</strong><span>접수 현황을 보고 승인과 증빙 확인을 처리합니다.</span><b>담당 업무 보기 →</b></a>
+      </div>
+    </section>
+    <section id="view-apply" class="view" hidden>
+      <div class="sectionheading"><h2>휴가·출장 신청</h2><p>필수 항목을 입력한 뒤 신청을 제출하세요.</p></div>
+      <div class="applylayout">
+        <section class="card"><div class="cardhead"><h2>신청 접수</h2><span>같은 날짜 신청은 묶어서 판단</span></div><div class="body">
+          <form id="request-form"><div class="fields"><div class="field wide"><label for="request-employee">신청자 <span class="req">*</span></label><input id="request-employee" type="text" list="employee-suggestions" placeholder="이름을 직접 입력하세요" autocomplete="name" required><datalist id="employee-suggestions"></datalist></div><div class="field"><label for="request-day">사용 날짜 <span class="req">*</span></label><input id="request-day" type="date" required></div><div class="field"><label for="request-kind">구분 <span class="req">*</span></label><select id="request-kind" required><option value="">선택하세요</option><option value="leave">휴가</option><option value="trip">출장</option></select></div><div class="field"><label for="request-period">사용 시간 <span class="req">*</span></label><select id="request-period" required><option value="">선택하세요</option><option value="full">전일</option><option value="am">오전 반차</option><option value="pm">오후 반차</option></select></div><div class="field wide"><label for="request-reason">사유 <span class="req">*</span></label><textarea id="request-reason" required placeholder="예: 개인 휴가, 가족 경조사, 고객사 출장"></textarea></div><div class="field wide"><label>소속 부서</label><output id="selected-dept" class="selected-dept">이름을 입력하세요</output></div><div id="evidence-note-field" class="field wide" hidden><label for="request-evidence-note">출장 증빙 자료 식별 정보 <span class="req">*</span></label><input id="request-evidence-note" placeholder="예: 출장 승인 문서 번호 또는 회의 초청 링크"></div></div><div id="trip-evidence-row" class="check" hidden><input id="request-evidence" type="checkbox"><label for="request-evidence">증빙 자료가 있는 중요 출장으로 신청</label></div><div class="actions"><button class="primary" type="submit">신청 추가</button><button id="submit-batch" class="secondary" type="button">묶음 제출</button></div></form>
+          <div id="queue" class="queue"><p class="empty">추가한 신청이 없습니다.</p></div>
+          <p class="hint">친인척 경조사는 책임자 확인 후 승인됩니다. 복귀 후 증빙서를 제출해야 하며, 제출된 증빙은 책임자가 확인합니다. 분류가 불명확한 사유도 책임자에게 전달합니다.</p>
+        </div></section>
+        <section class="card"><div class="cardhead"><h2>내 신청 내역</h2></div><div id="mine" class="body"><p class="empty">신청자를 선택하면 내역을 볼 수 있습니다.</p></div></section>
+      </div>
+    </section>
+    <section id="view-manager" class="view" hidden>
+      <div class="sectionheading"><h2>담당자 업무</h2><p>신청 상태를 확인하고 결재와 증빙을 처리하세요.</p></div>
+      <div class="managergrid"><div class="stack">
+        <section class="card"><div class="cardhead"><h2>신청 현황</h2><span id="row-count">0건</span></div><div class="toolbar"><span class="hint" style="margin:0">승인·취소 시 CSV가 갱신됩니다.</span><select id="status-filter" aria-label="상태 필터"><option value="">전체 상태</option><option value="pending">자동 승인 대기</option><option value="approved">승인</option><option value="manager_review">책임자 확인</option><option value="priority_review">우선 승인 권고</option><option value="offered">진행 의사 확인</option><option value="rejected">반려</option><option value="canceled">취소</option></select></div><div class="tablewrap"><table><thead><tr><th>번호 / 신청자</th><th>일정</th><th>구분</th><th>상태</th><th>복귀 후 증빙</th><th>처리</th></tr></thead><tbody id="request-rows"></tbody></table></div></section>
+        <section class="card"><div class="cardhead"><h2>알림 기록</h2><span>최근 30건</span></div><div id="notices" class="body"></div></section>
+      </div><div class="stack">
+        <section class="card"><div class="cardhead"><h2>시연 데이터 설정</h2></div><div class="body setup">
+          <form id="department-form" class="inline"><div class="field"><label for="dept-name">부서</label><input id="dept-name" placeholder="개발팀" required></div><div class="field"><label for="dept-count">총인원</label><input id="dept-count" type="number" min="1" value="10" required></div><button class="secondary" type="submit">저장</button></form>
+          <div class="divider"></div>
+          <form id="employee-form" class="inline employee"><div class="field"><label for="emp-name">직원</label><input id="emp-name" placeholder="김하나" required></div><div class="field"><label for="emp-dept">부서</label><select id="emp-dept" required></select></div><div class="field"><label for="emp-days">휴가일</label><input id="emp-days" type="number" min="0" step="0.5" value="15" required></div><button class="secondary" type="submit">저장</button></form>
+        </div></section>
+      </div></div>
+    </section>
+  </main><div id="toast" class="toast" hidden role="status"></div>
+  <script>
+    const $=id=>document.getElementById(id);let state={departments:[],employees:[],requests:[],notices:[]},batch=[];
+    const labels={pending:'자동 승인 대기',approved:'승인',manager_review:'책임자 확인',priority_review:'우선 승인 권고',offered:'진행 의사 확인',canceled:'취소',rejected:'반려'};
+    const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    function toast(message,error=false){const el=$('toast');el.textContent=message;el.className='toast'+(error?' error':'');el.hidden=false;clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.hidden=true,4500)}
+    async function api(path,data){const res=await fetch(path,{method:data===undefined?'GET':'POST',headers:{'Content-Type':'application/json'},body:data===undefined?undefined:JSON.stringify(data)});const body=await res.json();if(!res.ok)throw Error(body.error||'요청 실패');return body}
+    async function refresh(){state=await api('/api/state');render()}
+    function options(select,items){const current=select.value;select.innerHTML='<option value="">부서 선택</option>'+items.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');if(items.includes(current))select.value=current}
+    function updateSelectedDept(){const name=$('request-employee').value.trim(),person=state.employees.find(x=>x.name===name);$('selected-dept').textContent=person?person.department:name?'등록된 직원 정보가 없습니다':'이름을 입력하세요'}
+    function updateTripFields(){const trip=$('request-kind').value==='trip';$('trip-evidence-row').hidden=!trip;if(!trip)$('request-evidence').checked=false;const needed=trip&&$('request-evidence').checked;$('evidence-note-field').hidden=!needed;$('request-evidence-note').required=needed;if(!needed)$('request-evidence-note').value=''}
+    function renderRows(rows){
+      const body=$('request-rows');body.replaceChildren();
+      if(!rows.length){const tr=body.insertRow(),td=tr.insertCell();td.colSpan=6;td.className='empty';td.textContent='표시할 신청이 없습니다.';return}
+      for(const x of rows){
+        const tr=body.insertRow();
+        const cell=(text,sub)=>{const td=tr.insertCell();td.textContent=text;if(sub){const div=document.createElement('div');div.className='sub';div.textContent=sub;td.append(div)}return td};
+        cell('#'+x.id+' '+x.employee,x.department);
+        cell(x.day,{full:'전일',am:'오전',pm:'오후'}[x.period]);
+        const kindCell=cell(x.kind==='leave'?'휴가':'출장',x.reason);
+        if(x.evidence_note){const note=document.createElement('div');note.className='sub';note.textContent='출장 증빙: '+x.evidence_note;kindCell.append(note)}
+        const status=tr.insertCell(),badge=document.createElement('span');badge.className='badge '+x.status;badge.textContent=labels[x.status]||x.status;status.append(badge);
+        const proof=tr.insertCell();
+        const button=(parent,label,attr,value,className='mini')=>{const b=document.createElement('button');b.type='button';b.className=className;b.textContent=label;b.dataset[attr]=value;parent.append(b);return b};
+        if(x.status==='canceled'){proof.textContent='—'}else if(x.proof_status==='pending'){
+          const note=document.createElement('span');note.className='proofnote';note.textContent='신청자 복귀 후 제출 대기';proof.append(note);
+        }else if(x.proof_status==='submitted'){
+          const link=document.createElement('a');link.className='prooflink';link.href='/api/proof/'+x.id;link.target='_blank';link.rel='noopener';link.textContent='파일 보기';proof.append(link);
+          button(proof,'확인 완료','verify',x.id);
+        }else if(x.proof_status==='verified'){const done=document.createElement('span');done.className='badge approved';done.textContent='확인 완료';proof.append(done)}
+        else proof.textContent='—';
+        const actions=tr.insertCell(),wrap=document.createElement('div');wrap.className='rowactions';actions.append(wrap);
+        if(['manager_review','priority_review'].includes(x.status))button(wrap,'승인','action','approve').dataset.id=x.id;
+        if(x.status==='approved')button(wrap,'취소','action','cancel','mini warn').dataset.id=x.id;
+      }
+    }
+    function renderMine(){
+      const body=$('mine'),employee=$('request-employee').value.trim();body.replaceChildren();
+      if(!employee){const p=document.createElement('p');p.className='empty';p.textContent='신청자를 선택하면 내역을 볼 수 있습니다.';body.append(p);return}
+      const rows=state.requests.filter(x=>x.employee===employee),today=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+      if(!rows.length){const p=document.createElement('p');p.className='empty';p.textContent='아직 신청 내역이 없습니다.';body.append(p)}
+      for(const x of rows){
+        const item=document.createElement('div');item.className='mineitem';
+        const title=document.createElement('strong');title.textContent='#'+x.id+' · '+x.day+' · '+(x.kind==='leave'?'휴가':'출장');item.append(title);
+        const badge=document.createElement('span');badge.className='badge '+x.status;badge.textContent=labels[x.status]||x.status;badge.style.marginLeft='8px';item.append(badge);
+        const meta=document.createElement('div');meta.className='meta';meta.textContent=x.reason;item.append(meta);
+        const button=(label,action)=>{const b=document.createElement('button');b.type='button';b.className='mini';b.textContent=label;b.dataset.action=action;b.dataset.id=x.id;item.append(b)};
+        if(x.status==='offered'){button('진행','yes');button('거절','no')}
+        if(x.proof_status==='pending'&&x.status==='approved'){
+          const note=document.createElement('div');note.className='proofnote';note.textContent='복귀 후 경조사 증빙서 제출 필요';item.append(note);
+          if(x.day<today){const pick=document.createElement('button');pick.type='button';pick.className='mini';pick.textContent='증빙서 제출';pick.dataset.proofSelect=x.id;item.append(pick);const input=document.createElement('input');input.type='file';input.accept='.pdf,.png,.jpg,.jpeg';input.dataset.proofUpload=x.id;input.hidden=true;item.append(input)}
+        }
+        if(x.proof_status==='submitted'){const note=document.createElement('div');note.className='meta';note.textContent='증빙서 제출됨 · 담당자 확인 대기';item.append(note)}
+        if(x.proof_status==='verified'){const note=document.createElement('div');note.className='meta';note.textContent='증빙서 확인 완료';item.append(note)}
+        body.append(item);
+      }
+      const notes=state.notices.filter(x=>x.employee===employee).slice(0,5);
+      if(notes.length){const heading=document.createElement('h3');heading.textContent='최근 알림';heading.style.fontSize='1rem';body.append(heading);for(const x of notes){const p=document.createElement('p');p.className='meta';p.textContent=x.message;body.append(p)}}
+    }
+    function render(){$('employee-suggestions').innerHTML=state.employees.map(x=>`<option value="${esc(x.name)}"></option>`).join('');options($('emp-dept'),state.departments.map(x=>x.name));updateSelectedDept();renderMine();
+      const counts={};state.requests.forEach(x=>counts[x.status]=(counts[x.status]||0)+1);
+      $('count-all').textContent=state.requests.length;$('count-approved').textContent=counts.approved||0;$('count-review').textContent=(counts.manager_review||0)+(counts.priority_review||0);$('count-offered').textContent=counts.offered||0;
+      const rows=state.requests.filter(x=>!$('status-filter').value||x.status===$('status-filter').value);$('row-count').textContent=`${rows.length}건`;
+      renderRows(rows);
+      $('notices').innerHTML=state.notices.length?state.notices.map(x=>`<div class="notice"><b>${esc(x.employee)}</b> · ${esc(x.message)}<time>${esc(x.created.replace('T',' ').slice(0,16))}</time></div>`).join(''):'<p class="empty">아직 알림이 없습니다.</p>';
+      $('queue').innerHTML=batch.length?batch.map((x,i)=>`<div class="queueitem"><span>${esc(x.employee)} · ${esc(x.day)} · ${x.kind==='leave'?'휴가':'출장'} · ${{full:'전일',am:'오전',pm:'오후'}[x.period]}</span><button class="mini warn" type="button" data-remove="${i}">삭제</button></div>`).join(''):'<p class="empty">추가한 신청이 없습니다.</p>';
+    }
+    $('request-day').value=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+    $('request-employee').addEventListener('input',()=>{updateSelectedDept();renderMine()});
+    $('request-kind').addEventListener('change',updateTripFields);
+    $('request-evidence').addEventListener('change',updateTripFields);
+    $('request-form').addEventListener('submit',e=>{e.preventDefault();const item={employee:$('request-employee').value.trim(),day:$('request-day').value,kind:$('request-kind').value,period:$('request-period').value,reason:$('request-reason').value.trim(),evidence:$('request-evidence').checked,evidence_note:$('request-evidence-note').value.trim()};if(!state.employees.some(x=>x.name===item.employee))return toast('등록된 직원 이름을 입력하세요. 담당자 페이지에서 먼저 직원 등록이 필요합니다.',true);if(!item.reason)return toast('사유를 입력하세요',true);if(batch.some(x=>x.employee===item.employee&&x.day===item.day))return toast('같은 직원의 동일 날짜 신청이 이미 있습니다',true);batch.push(item);$('request-reason').value='';$('request-evidence').checked=false;$('request-evidence-note').value='';updateTripFields();render();toast('신청을 묶음에 추가했습니다')});
+    $('queue').addEventListener('click',e=>{const button=e.target.closest('[data-remove]');if(button){batch.splice(Number(button.dataset.remove),1);render()}});
+    $('submit-batch').addEventListener('click',async()=>{if(!batch.length)return toast('신청을 먼저 추가하세요',true);try{const result=await api('/api/submit',batch);batch=[];await refresh();toast(`${result.results.length}건 처리했습니다`)}catch(e){toast(e.message,true)}});
+    $('department-form').addEventListener('submit',async e=>{e.preventDefault();try{await api('/api/department',{name:$('dept-name').value,headcount:Number($('dept-count').value)});await refresh();toast('부서를 저장했습니다')}catch(e){toast(e.message,true)}});
+    $('employee-form').addEventListener('submit',async e=>{e.preventDefault();try{await api('/api/employee',{name:$('emp-name').value,department:$('emp-dept').value,leave_days:Number($('emp-days').value)});$('emp-name').value='';await refresh();toast('직원을 저장했습니다')}catch(e){toast(e.message,true)}});
+    $('status-filter').addEventListener('change',render);
+    async function changeFrom(e){const button=e.target.closest('[data-action]');if(!button)return;const {id,action}=button.dataset;button.disabled=true;try{await api('/api/change',{id:Number(id),action});await refresh();toast('상태를 변경했습니다')}catch(error){button.disabled=false;toast(error.message,true)}}
+    $('request-rows').addEventListener('click',changeFrom);
+    $('mine').addEventListener('click',changeFrom);
+    $('mine').addEventListener('click',e=>{const pick=e.target.closest('[data-proof-select]');if(pick)$('mine').querySelector('[data-proof-upload="'+pick.dataset.proofSelect+'"]').click()});
+    $('request-rows').addEventListener('click',async e=>{
+      const verify=e.target.closest('[data-verify]');
+      if(verify){try{await api('/api/verify',{id:Number(verify.dataset.verify)});await refresh();toast('증빙서 확인을 완료했습니다')}catch(error){toast(error.message,true)}}
+    });
+    $('mine').addEventListener('change',async e=>{
+      const input=e.target.closest('[data-proof-upload]');if(!input||!input.files.length)return;
+      const file=input.files[0];if(file.size>5000000)return toast('증빙서는 5MB 이하여야 합니다',true);
+      try{const response=await fetch('/api/proof/'+input.dataset.proofUpload,{method:'POST',body:file});
+        const result=await response.json();if(!response.ok)throw Error(result.error||'제출 실패');
+        await refresh();toast('증빙서를 제출했습니다')
+      }catch(error){toast(error.message,true)}
+    });
+    async function checkModel(){try{const x=await api('/api/models');$('model').className='model '+(x.models.length?'ok':'bad');$('model').querySelector('span').textContent=x.models.length?`LM Studio 연결 · ${x.selected}`:'LM Studio 모델 없음'}catch(e){$('model').className='model bad';$('model').querySelector('span').textContent='LM Studio 연결 필요'}}
+    const view=({'/':'home','/apply':'apply','/manager':'manager'})[location.pathname]||'home';
+    for(const name of ['home','apply','manager'])$('view-'+name).hidden=name!==view;
+    for(const link of document.querySelectorAll('[data-nav]')){const active=link.dataset.nav===view;link.classList.toggle('active',active);if(active)link.setAttribute('aria-current','page')}
+    document.title=({home:'메인',apply:'신청 페이지',manager:'담당자 페이지'})[view]+' | 휴가 및 출장 처리';
+    refresh().catch(e=>toast(e.message,true));checkModel();
+  </script>
+</body>
+</html>
