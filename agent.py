@@ -46,6 +46,11 @@ def connect():
         db.execute("ALTER TABLE requests ADD COLUMN proof_file TEXT NOT NULL DEFAULT ''")
     if "evidence_note" not in columns:
         db.execute("ALTER TABLE requests ADD COLUMN evidence_note TEXT NOT NULL DEFAULT ''")
+    if "end_day" not in columns:
+        # A request covers day..end_day; requests saved before ranges were one day long.
+        db.execute("ALTER TABLE requests ADD COLUMN end_day TEXT NOT NULL DEFAULT ''")
+        db.execute("UPDATE requests SET end_day=day WHERE end_day=''")
+        db.commit()
     return db
 
 
@@ -129,36 +134,81 @@ def validate(item):
     if item.get("evidence", False):
         if item["kind"] != "trip" or not isinstance(item.get("evidence_note"), str) or not item["evidence_note"].strip():
             raise ValueError("증빙이 있는 출장은 증빙 자료 식별 정보를 입력해야 합니다")
-    try:
-        if date.fromisoformat(item["day"]).isoformat() != item["day"]:
-            raise ValueError()
-    except ValueError:
-        raise ValueError("day는 YYYY-MM-DD 형식이어야 합니다") from None
+    if not item.get("end_day"):
+        item["end_day"] = item["day"]
+    for field in ("day", "end_day"):
+        try:
+            if not isinstance(item[field], str) or date.fromisoformat(item[field]).isoformat() != item[field]:
+                raise ValueError()
+        except ValueError:
+            raise ValueError(f"{field}는 YYYY-MM-DD 형식이어야 합니다") from None
+    if item["end_day"] < item["day"]:
+        raise ValueError("종료일이 시작일보다 빠릅니다")
+    if (date.fromisoformat(item["end_day"]) - date.fromisoformat(item["day"])).days >= MAX_SPAN:
+        raise ValueError(f"한 신청은 최대 {MAX_SPAN}일입니다")
+    if item["end_day"] != item["day"] and item["period"] != "full":
+        raise ValueError("반차는 하루짜리 신청만 가능합니다")
+    if not workdays(item["day"], item["end_day"]):
+        raise ValueError("기간에 평일이 없습니다")
     return item
+
+
+MAX_SPAN = 31
+
+
+def workdays(start, end):
+    """Days a request uses: weekdays in the range, or the single day asked for."""
+    first, last = date.fromisoformat(start), date.fromisoformat(end)
+    days = [first + timedelta(days=n) for n in range((last - first).days + 1)]
+    # ponytail: weekends only; public holidays still count until a holiday calendar is added.
+    return [d.isoformat() for d in days if first == last or d.weekday() < 5]
+
+
+def units(row):
+    """Leave days a request uses (0.5 for a half day)."""
+    return len(workdays(row["day"], row["end_day"])) * (1 if row["period"] == "full" else .5)
 
 
 def slots(period):
     return {"am", "pm"} if period == "full" else {period}
 
 
-def fits(db, department, day, period, reserved=()):
-    headcount = db.execute("SELECT headcount FROM departments WHERE name=?", (department,)).fetchone()[0]
-    rows = db.execute("SELECT period FROM requests WHERE department=? AND day=? "
-                      "AND status IN ('approved','offered')", (department, day))
-    periods = [row[0] for row in rows] + list(reserved)
-    return all(10 * (1 + sum(slot in slots(p) for p in periods)) <= 3 * headcount
-               for slot in slots(period))
+def headcount(db, department):
+    return db.execute("SELECT headcount FROM departments WHERE name=?", (department,)).fetchone()[0]
+
+
+def absences(db, department, start, end, rows=()):
+    """(day, am/pm) -> people out: approved/offered requests overlapping start..end, plus extra rows."""
+    counts = {}
+    for row in [*db.execute("SELECT day,end_day,period FROM requests WHERE department=? AND day<=? "
+                            "AND end_day>=? AND status IN ('approved','offered')", (department, end, start)), *rows]:
+        for day in workdays(row["day"], row["end_day"]):
+            for slot in slots(row["period"]):
+                counts[day, slot] = counts.get((day, slot), 0) + 1
+    return counts
+
+
+def within_30(db, department, row, counts):
+    return all(10 * counts.get((day, slot), 0) <= 3 * headcount(db, department)
+               for day in workdays(row["day"], row["end_day"]) for slot in slots(row["period"]))
+
+
+def fits(db, department, start, end, period):
+    """Whether one more absence over start..end stays within 30% on every day."""
+    row = {"day": start, "end_day": end, "period": period}
+    return within_30(db, department, row, absences(db, department, start, end, [row]))
 
 
 def export_csv(db):
-    rows = db.execute("SELECT id,department,employee,day,kind,period FROM requests "
-                      "WHERE status='approved' ORDER BY department,day,employee")
+    rows = db.execute("SELECT id,department,employee,day,end_day,kind,period FROM requests "
+                      "WHERE status='approved' ORDER BY department,day,employee").fetchall()
     fd, tmp = tempfile.mkstemp(dir=ROOT, suffix=".csv")
     try:
         with os.fdopen(fd, "w", encoding="utf-8-sig", newline="") as out:
             writer = csv.writer(out)
-            writer.writerow(("신청번호", "부서", "이름", "날짜", "구분", "시간"))
-            writer.writerows(rows)
+            writer.writerow(("신청번호", "부서", "이름", "기간", "사용일", "구분", "시간"))
+            writer.writerows((r["id"], r["department"], r["employee"], f"{r['day']} ~ {r['end_day']}",
+                              f"{units(r):g}", r["kind"], r["period"]) for r in rows)
         os.replace(tmp, CSV)
     finally:
         if os.path.exists(tmp):
@@ -166,9 +216,9 @@ def export_csv(db):
 
 
 def used_leave(db, employee):
-    return db.execute("SELECT COALESCE(SUM(CASE WHEN period='full' THEN 1 ELSE 0.5 END),0) "
-                      "FROM requests WHERE employee=? AND kind='leave' "
-                      "AND status NOT IN ('canceled','rejected')", (employee,)).fetchone()[0]
+    return sum(units(row) for row in db.execute(
+        "SELECT day,end_day,period FROM requests WHERE employee=? AND kind='leave' "
+        "AND status NOT IN ('canceled','rejected')", (employee,)))
 
 
 def submit(db, items, classifier=None):
@@ -187,11 +237,13 @@ def submit(db, items, classifier=None):
                 raise ValueError(f"등록되지 않은 직원: {item['employee']}")
             people[item["employee"]] = person
             if item["kind"] == "leave":
-                charge[item["employee"]] = charge.get(item["employee"], 0) + (1 if item["period"] == "full" else .5)
-            duplicate = db.execute("SELECT 1 FROM requests WHERE employee=? AND day=? "
-                                   "AND status NOT IN ('canceled','rejected')", (item["employee"], item["day"])).fetchone()
-            if duplicate or sum(x["employee"] == item["employee"] and x["day"] == item["day"] for x in items) > 1:
-                raise ValueError(f"동일 날짜 중복 신청: {item['employee']} {item['day']}")
+                charge[item["employee"]] = charge.get(item["employee"], 0) + units(item)
+            duplicate = db.execute("SELECT 1 FROM requests WHERE employee=? AND day<=? AND end_day>=? "
+                                   "AND status NOT IN ('canceled','rejected')",
+                                   (item["employee"], item["end_day"], item["day"])).fetchone()
+            if duplicate or sum(x["employee"] == item["employee"] and x["day"] <= item["end_day"]
+                                and x["end_day"] >= item["day"] for x in items) > 1:
+                raise ValueError(f"기간이 겹치는 중복 신청: {item['employee']} {item['day']}~{item['end_day']}")
         insufficient = set()
         for employee, needed in charge.items():
             if needed + used_leave(db, employee) > people[employee]["leave_days"]:
@@ -212,8 +264,8 @@ def submit(db, items, classifier=None):
             # Normal requests wait for settle(): the 30% rule is applied a day later to everything collected.
             status = "rejected" if i in rejected else "priority_review" if i in exceptions else "manager_review" if i in uncertain else "pending"
             proof_status = "pending" if status != "rejected" and item["kind"] == "leave" and categories[i] == "family_event" else ""
-            cursor = db.execute("INSERT INTO requests(employee,department,day,kind,period,reason,evidence,category,status,created,proof_status,evidence_note) "
-                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", (item["employee"], department, item["day"], item["kind"],
+            cursor = db.execute("INSERT INTO requests(employee,department,day,end_day,kind,period,reason,evidence,category,status,created,proof_status,evidence_note) "
+                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", (item["employee"], department, item["day"], item["end_day"], item["kind"],
                 item["period"], item["reason"], int(item.get("evidence", False)), categories[i], status, now(), proof_status,
                 item.get("evidence_note", "").strip()))
             notify(db, item["employee"], f"신청 #{cursor.lastrowid}: 잔여 휴가일 부족으로 반려" if status == "rejected" else f"신청 #{cursor.lastrowid}: {status}")
@@ -227,9 +279,10 @@ def submit(db, items, classifier=None):
 def settle(db, at=None):
     """Auto-approves pending requests a day after submission when the department stays within 30%.
 
-    Requests for the same department and day are decided together, so nobody wins by submitting first.
-    If they do not all fit, all go to manager review and a person chooses. A request whose day is
-    tomorrow or earlier is decided right away so the answer comes before the absence."""
+    All due requests of a department are counted together, so nobody wins by submitting first: a request
+    is approved only if every day it covers stays within 30% with all of them included. Otherwise it goes
+    to manager review and a person chooses. A request starting tomorrow or earlier is decided right away
+    so the answer comes before the absence."""
     at = at or datetime.now().astimezone()
     with db:
         db.execute("BEGIN IMMEDIATE")
@@ -237,15 +290,11 @@ def settle(db, at=None):
         for row in db.execute("SELECT * FROM requests WHERE status='pending' ORDER BY id").fetchall():
             if (datetime.fromisoformat(row["created"]) <= at - timedelta(days=1)
                     or row["day"] <= (at.date() + timedelta(days=1)).isoformat()):
-                due.setdefault((row["department"], row["day"]), []).append(row)
-        for (department, day), rows in due.items():
-            existing = [r[0] for r in db.execute("SELECT period FROM requests WHERE department=? AND day=? "
-                        "AND status IN ('approved','offered')", (department, day))]
-            headcount = db.execute("SELECT headcount FROM departments WHERE name=?", (department,)).fetchone()[0]
-            status = "approved" if all(
-                10 * sum(slot in slots(p) for p in existing + [r["period"] for r in rows]) <= 3 * headcount
-                for slot in ("am", "pm")) else "manager_review"
+                due.setdefault(row["department"], []).append(row)
+        for department, rows in due.items():
+            counts = absences(db, department, min(r["day"] for r in rows), max(r["end_day"] for r in rows), rows)
             for row in rows:
+                status = "approved" if within_30(db, department, row, counts) else "manager_review"
                 db.execute("UPDATE requests SET status=? WHERE id=?", (status, row["id"]))
                 notify(db, row["employee"], f"신청 #{row['id']}: 출타율 30% 이내로 자동 승인" if status == "approved"
                        else f"신청 #{row['id']}: 출타율 30% 초과로 책임자 확인")
@@ -254,12 +303,12 @@ def settle(db, at=None):
         return sum(len(rows) for rows in due.values())
 
 
-def offer_waiters(db, department, day):
-    for row in db.execute("SELECT * FROM requests WHERE department=? AND day=? "
+def offer_waiters(db, department, start, end):
+    for row in db.execute("SELECT * FROM requests WHERE department=? AND day<=? AND end_day>=? "
                           "AND status='manager_review' AND (category='other' OR "
                           "(kind='trip' AND category='important_trip' AND evidence=0)) ORDER BY id",
-                          (department, day)).fetchall():
-        if fits(db, department, day, row["period"]):
+                          (department, end, start)).fetchall():
+        if fits(db, department, row["day"], row["end_day"], row["period"]):
             db.execute("UPDATE requests SET status='offered' WHERE id=?", (row["id"],))
             notify(db, row["employee"], f"신청 #{row['id']}: 출타 가능 자리가 생겼습니다. "
                    f"python agent.py respond {row['id']} yes 또는 no로 답해주세요.")
@@ -279,7 +328,7 @@ def change(db, request_id, action):
         db.execute("UPDATE requests SET status=? WHERE id=?", (status, request_id))
         notify(db, row["employee"], f"신청 #{request_id}: {status}")
         if action in {"cancel", "no"}:
-            offer_waiters(db, row["department"], row["day"])
+            offer_waiters(db, row["department"], row["day"], row["end_day"])
         export_csv(db)
         return status
 
@@ -297,7 +346,7 @@ def submit_proof(db, request_id, data):
         row = db.execute("SELECT * FROM requests WHERE id=?", (request_id,)).fetchone()
         if not row or row["proof_status"] != "pending" or row["status"] != "approved":
             raise ValueError("승인된 경조사 신청만 증빙서를 제출할 수 있습니다")
-        if date.fromisoformat(row["day"]) >= date.today():
+        if date.fromisoformat(row["end_day"]) >= date.today():
             raise ValueError("증빙서는 복귀 후에 제출할 수 있습니다")
         folder = ROOT / "proofs"
         folder.mkdir(exist_ok=True)
@@ -373,7 +422,7 @@ def main():
         elif args.command in {"approve", "cancel", "respond"}:
             print(change(db, args.id, args.answer if args.command == "respond" else args.command))
         elif args.command == "list":
-            query = "SELECT id,employee,department,day,kind,period,category,status FROM requests"
+            query = "SELECT id,employee,department,day,end_day,kind,period,category,status FROM requests"
             rows = db.execute(query + (" WHERE status=?" if args.status else "") + " ORDER BY id",
                               (args.status,) if args.status else ())
             print(json.dumps([dict(row) for row in rows], ensure_ascii=False, indent=2))

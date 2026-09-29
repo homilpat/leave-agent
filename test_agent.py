@@ -279,13 +279,24 @@ class AgentTests(unittest.TestCase):
                  "12.22 오후 외근입니다": "2026-12-22", "연차 낼게요, 내일 하루": "2026-09-30",
                  "10월 7일(수) 연차": "2026-10-07", "품의 EXP-7731, 공문 NRF-2026-0912, 12/23 출장": "2026-12-23"}
         for text, expected in clear.items():
-            self.assertEqual(str(mail_agent.email_date([text], today)[0]), expected, text)
+            self.assertEqual(mail_agent.email_dates([text], today)[0], (date.fromisoformat(expected),) * 2, text)
+        periods = {"10월 5일부터 7일까지 연차": ("2026-10-05", "2026-10-07"),
+                   "10/5~10/7 휴가": ("2026-10-05", "2026-10-07"),
+                   "내일부터 모레까지 쉽니다": ("2026-09-30", "2026-10-01"),
+                   "담주 월요일부터 수요일까지": ("2026-10-05", "2026-10-07"),
+                   "12월 30일부터 1월 2일까지": ("2026-12-30", "2027-01-02"),
+                   "12월 30일부터 2일까지": ("2026-12-30", "2027-01-02"),
+                   "10월 5일부터 7일까지 연차 3일": ("2026-10-05", "2026-10-07")}
+        for text, (first, last) in periods.items():
+            found = mail_agent.email_dates([text], today)[0]
+            self.assertEqual((str(found[0]), str(found[1])), (first, last), text)
         for text in ("10월 7일 휴가요, 아 아니다 8일로", "지난주 금요일 반차 소급", "10월 7일(목) 연차",
-                     "다음 주 중에 하루", "10월 7일 또는 8일", "내일부터 모레까지", "휴가 쓸게요"):
-            self.assertIsNone(mail_agent.email_date([text], today)[0], text)
+                     "다음 주 중에 하루", "10월 7일 또는 8일", "10월 7일, 8일 연차", "5일~7일 휴가",
+                     "10월 5일부터 7일까지 연차 5일", "휴가 쓸게요"):
+            self.assertIsNone(mail_agent.email_dates([text], today)[0], text)
         # The latest message that mentions a date wins, so a correction replaces the first date.
-        self.assertEqual(mail_agent.email_date(["내일 휴가요", "죄송해요 10월 14일로 바꿔주세요", "종일이요"], today)[0],
-                         date(2026, 10, 14))
+        self.assertEqual(mail_agent.email_dates(["내일 휴가요", "죄송해요 10월 14일로 바꿔주세요", "종일이요"], today)[0],
+                         (date(2026, 10, 14), date(2026, 10, 14)))
         person = self.db.execute("SELECT * FROM employees WHERE name='가'").fetchone()
         trip = {"kind": "trip", "period": "full", "reason": "고객사 점검", "evidence": True}
         result, final, _, proposal = mail_agent.run_tool(self.db, person, "propose", trip, ["10월 8일 출장"], today)
@@ -296,7 +307,47 @@ class AgentTests(unittest.TestCase):
         self.assertIn("증빙: BT-0931", final)
         self.assertTrue(keep)
         self.assertEqual(proposal["day"], "2026-10-08")
+        leave = {"kind": "leave", "period": "full", "reason": "가족 여행"}
+        _, final, _, proposal = mail_agent.run_tool(
+            self.db, person, "propose", leave, ["10월 9일부터 13일까지 휴가"], today)
+        self.assertIn("기간 2026-10-09(금) ~ 2026-10-13(화) · 사용일 3일(주말 제외)", final)
+        self.assertEqual((proposal["day"], proposal["end_day"]), ("2026-10-09", "2026-10-13"))
+        result, final, _, _ = mail_agent.run_tool(
+            self.db, person, "propose", dict(leave, period="am"), ["10월 9일부터 13일까지 휴가"], today)
+        self.assertIn("반차는 하루짜리", result["error"])
         self.assertEqual(self.db.execute("SELECT COUNT(*) FROM requests").fetchone()[0], 0)
+
+    def test_periods_use_weekdays_and_are_decided_as_one_request(self):
+        # 2026-10-09 is a Friday: 10-09..10-13 uses Fri, Mon, Tue = 3 leave days.
+        period = lambda name, first, last, **kw: dict(self.item(name, **kw), day=first, end_day=last)
+        self.assertEqual(agent.units({"day": "2026-10-09", "end_day": "2026-10-13", "period": "full"}), 3)
+        self.assertEqual(agent.units({"day": "2026-10-10", "end_day": "2026-10-10", "period": "am"}), .5)
+        for bad, message in ((period("가", "2026-10-13", "2026-10-09"), "종료일"),
+                             (period("가", "2026-10-09", "2026-10-13", period="am"), "반차"),
+                             (period("가", "2026-10-10", "2026-10-11"), "평일"),
+                             (period("가", "2026-10-01", "2026-11-15"), "최대")):
+            with self.assertRaisesRegex(ValueError, message):
+                self.submit([bad])
+        with self.db:
+            self.db.execute("UPDATE employees SET leave_days=3 WHERE name='가'")
+        self.assertEqual(self.submit([period("가", "2026-10-09", "2026-10-13")])[0]["status"], "approved")
+        self.assertEqual(agent.used_leave(self.db, "가"), 3)
+        with self.assertRaisesRegex(ValueError, "겹치는"):
+            self.submit([period("가", "2026-10-13", "2026-10-14", kind="trip")])
+        # 10-12 already has 가; 나, 다 fit, but a third over 10-12 makes 4/10 on that day only.
+        self.assertEqual(self.submit([period("나", "2026-10-12", "2026-10-12")])[0]["status"], "approved")
+        self.assertEqual(self.submit([period("다", "2026-10-12", "2026-10-12")])[0]["status"], "approved")
+        whole = self.submit([period("라", "2026-10-08", "2026-10-14")])[0]
+        self.assertEqual(whole["status"], "manager_review")  # one full day blocks the whole period
+        self.assertEqual(self.submit([period("마", "2026-10-14", "2026-10-15")])[0]["status"], "approved")
+        with agent.CSV.open(encoding="utf-8-sig", newline="") as f:
+            rows = list(csv.reader(f))
+        self.assertEqual(rows[0], ["신청번호", "부서", "이름", "기간", "사용일", "구분", "시간"])
+        self.assertIn(["1", "개발", "가", "2026-10-09 ~ 2026-10-13", "3", "leave", "full"], rows)
+        # Cancelling 가 frees 10-09..10-13, so 라's whole period now fits and is offered.
+        agent.change(self.db, 1, "cancel")
+        self.assertEqual(self.db.execute("SELECT status FROM requests WHERE id=?", (whole["id"],)).fetchone()[0],
+                         "offered")
 
 
 if __name__ == "__main__":

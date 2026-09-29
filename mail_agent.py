@@ -138,35 +138,75 @@ CANDIDATES = [re.compile(x, re.I) for x in (
 )]
 
 
+CONNECTOR = re.compile(r"\s*(?:부터|에서|~|〜|-|–)\s*")
+
+
 def find_dates(text, today):
-    """Every date-like expression in text -> (resolved [(phrase, date)], unresolved [phrase])."""
-    found, unclear = [], []
+    """Every date-like expression in text -> [(start, end, phrase, date or None)] in text order."""
+    found = []
     for pattern in CANDIDATES:
         for m in pattern.finditer(text):
-            day = resolve_date(m[0], today)
-            if day:
-                found.append((m[0].strip(), day))
-            else:
-                unclear.append(m[0].strip())
-        text = pattern.sub(lambda m: " " * len(m[0]), text)
-    return found, unclear
+            found.append((m.start(), m.end(), m[0].strip(), resolve_date(m[0], today)))
+        text = pattern.sub(lambda m: " " * len(m[0]), text)  # same length, so positions stay valid
+    return sorted(found)
 
 
-def email_date(said, today):
-    """The one date the employee means, read from their latest message that mentions a date, or (None, error).
+def continue_from(first, phrase):
+    """The end of a period written without its month or week ('7일까지', '수요일까지'): the first such day on or
+    after the start, so it is read against the start and not against today."""
+    if m := re.fullmatch(r"([월화수목금토일])(?:요일|욜)", re.sub(r"\s+", "", phrase)):
+        return first + timedelta(days=(WEEKDAYS.index(m[1]) - first.weekday()) % 7)
+    m = re.fullmatch(r"(\d{1,2})\s*일", phrase)
+    if not m:
+        return None
+    for month in (first.month, first.month % 12 + 1):
+        try:
+            found = date(first.year + (month < first.month), month, int(m[1]))
+        except ValueError:
+            continue
+        if found >= first:
+            return found
+    return None
+
+
+def email_dates(said, today):
+    """(first, last) of the one day or period the employee means, from their latest message that mentions
+    a date, or (None, error). "A부터 B까지" / "A~B" is a period; anything else unclear asks again.
 
     The model never handles dates, so it can neither miscopy nor invent one."""
     for text in reversed(said):
-        found, unclear = find_dates(text, today)
-        if not found and not unclear:
+        found = find_dates(text, today)
+        if not found:
             continue
-        days = {day for _, day in found}
-        if unclear or len(days) != 1:
-            phrases = [p for p, _ in found] + unclear
-            return None, (f"메일에서 하루로 정해진 날짜를 찾지 못했습니다(찾은 표현: {', '.join(phrases)}). "
-                          "Ask the employee for one specific date in the form N월 N일, without naming a date yourself.")
-        return days.pop(), None
-    return None, "메일에 날짜가 없습니다. Ask the employee for the date, without naming a date yourself."
+        periods, phrases, counts, i = [], [], [], 0
+        while i < len(found):
+            _, end, phrase, first = found[i]
+            if i + 1 < len(found) and CONNECTOR.fullmatch(text[end:found[i + 1][0]]):
+                last_phrase, last = found[i + 1][2], found[i + 1][3]
+                if first:
+                    last = continue_from(first, last_phrase) or last
+                periods.append((first, last) if first and last and first <= last else None)
+                phrases.append(f"{phrase}~{last_phrase}")
+                i += 2
+            else:
+                if not first and (m := re.fullmatch(r"(\d{1,2})\s*일", phrase)):
+                    counts.append(int(m[1]))  # a day of month, or a number of days ("연차 3일")
+                else:
+                    periods.append((first, first) if first else None)
+                phrases.append(phrase)
+                i += 1
+        # A bare "N일" is only a number of days when it matches the one period found; otherwise it is unclear.
+        if (counts and len(set(periods)) == 1 and None not in periods
+                and all(n in {(periods[0][1] - periods[0][0]).days + 1,
+                              len(agent.workdays(periods[0][0].isoformat(), periods[0][1].isoformat()))}
+                        for n in counts)):
+            counts = []
+        if counts or None in periods or len(set(periods)) != 1:
+            return None, (f"메일에서 날짜나 기간을 하나로 정하지 못했습니다(찾은 표현: {', '.join(phrases)}). "
+                          "Ask the employee for one date (N월 N일) or one period (N월 N일부터 N월 N일까지), "
+                          "without naming a date yourself.")
+        return periods[0], None
+    return None, "메일에 날짜가 없습니다. Ask the employee for the date or period, without naming a date yourself."
 
 
 def prompt(person, today):
@@ -186,8 +226,10 @@ def prompt(person, today):
         "Ask for everything that is missing in one question. "
         f"Requests are only for {person['name']}. If the email asks to file for another person, "
         "reply that each person must send the request from their own address. "
-        "One request covers one day; if the email asks for several days or requests, "
-        "ask them to send one email per day. If the email gives conflicting dates or values, ask. "
+        "One request covers one day or one continuous period (e.g. 10월 5일부터 7일까지). A period longer than "
+        "one day is always full-day: use period=full and do not ask about 오전/오후 for it. "
+        "If the email asks for several separate requests, ask them to send one email "
+        "per request. If the email gives conflicting dates or values, ask. "
         "You may call leave_balance and capacity to warn the employee or offer an alternative such as a half day. "
         "When everything is clear, call propose; the employee then confirms or corrects it. "
         "If they correct a proposal, call propose again with the corrected values. "
@@ -239,8 +281,11 @@ def remember(db, employee, state):
 
 
 def describe(item):
-    day = date.fromisoformat(item["day"])
-    return (f"날짜 {item['day']}({WEEKDAYS[day.weekday()]}) · {'휴가' if item['kind'] == 'leave' else '출장'} · "
+    first, last = date.fromisoformat(item["day"]), date.fromisoformat(item["end_day"])
+    when = (f"날짜 {first}({WEEKDAYS[first.weekday()]})" if first == last else
+            f"기간 {first}({WEEKDAYS[first.weekday()]}) ~ {last}({WEEKDAYS[last.weekday()]}) · "
+            f"사용일 {agent.units(item):g}일(주말 제외)")
+    return (f"{when} · {'휴가' if item['kind'] == 'leave' else '출장'} · "
             f"{PERIODS[item['period']]} · 사유: {item['reason']}"
             + (f" · 증빙: {item['evidence_note']}" if item.get("evidence") else ""))
 
@@ -253,17 +298,18 @@ def run_tool(db, person, name, args, said, today):
     if name == "leave_balance":
         return {"remaining_days": person["leave_days"] - agent.used_leave(db, person["name"])}, None, False, None
     if name == "capacity":
-        day, error = email_date(said, today)
+        dates, error = email_dates(said, today)
         if error or args.get("period") not in PERIODS:
             return {"error": error or "period는 full/am/pm"}, None, False, None
-        return {"date": day.isoformat(), "fits_30_percent":
-                agent.fits(db, person["department"], day.isoformat(), args["period"])}, None, False, None
+        first, last = (d.isoformat() for d in dates)
+        return {"start": first, "end": last, "fits_30_percent":
+                agent.fits(db, person["department"], first, last, args["period"])}, None, False, None
     if name == "propose":
-        day, error = email_date(said, today)
+        dates, error = email_dates(said, today)
         if error:
             return {"error": error}, None, False, None
         item = {k: args.get(k) for k in ("kind", "period", "reason", "evidence_note")}
-        item.update(day=day.isoformat(), employee=person["name"],
+        item.update(day=dates[0].isoformat(), end_day=dates[1].isoformat(), employee=person["name"],
                     evidence=item["kind"] == "trip" and args.get("evidence") is True)
         item["evidence_note"] = str(item["evidence_note"] or "").strip() if item["evidence"] else ""
         gaps = missing(item)
