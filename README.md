@@ -38,7 +38,7 @@ python mail_agent.py try hana@example.com "확인"
 python mail_agent.py run
 ```
 
-`try`는 메일 계정 없이 한 통을 처리해 답장을 화면에 보여줍니다. `run`은 IMAP 메일함을 1분마다 확인하고 SMTP로 답장합니다. 환경 변수 `MAIL_USER`, `MAIL_PASSWORD`, `IMAP_HOST`, `SMTP_HOST`(기본 Gmail)가 필요합니다. 등록되지 않은 주소, 자동 발송 메일, 발신자 인증(`dmarc=pass`)이 없는 메일에는 답하지 않습니다. DMARC가 없는 사내 메일 서버는 `MAIL_TRUST_SENDER=1`을 설정하고 내부 전용 메일함을 사용하세요.
+`try`는 메일 계정 없이 본문 한 통을 직접 처리해 답장을 화면에 보여줍니다. `run`은 IMAP 메일함을 1분마다 확인하고, **제목에 `휴가`가 포함된 읽지 않은 메일만** 본문을 읽습니다. 제목에 `휴가`가 없는 메일은 읽지 않은 상태로 남습니다. 제목 조건을 통과해도 본문이 휴가·출장과 무관하다고 LLM이 판단하면 신청 처리나 답장 없이 읽음 처리합니다. 기존 신청 대화의 짧은 수정 답장은 앞선 맥락과 함께 판단합니다. `try`는 제목이 없으므로 제목 필터만 적용하지 않습니다. 환경 변수 `MAIL_USER`, `MAIL_PASSWORD`, `IMAP_HOST`, `SMTP_HOST`(기본 Gmail)가 필요합니다. 등록되지 않은 주소, 자동 발송 메일, 발신자 인증(`dmarc=pass`)이 없는 메일에는 답하지 않습니다. DMARC가 없는 사내 메일 서버는 `MAIL_TRUST_SENDER=1`을 설정하고 내부 전용 메일함을 사용하세요.
 
 메일로 접수한 신청도 웹 담당자 화면에 그대로 표시됩니다.
 

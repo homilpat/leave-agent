@@ -1,0 +1,361 @@
+{
+  "dataset_sha256": "406a7c326ab0d22cabf2c8e4d5f212a35e8dd9c6f26df0cc893101887c9f08a3",
+  "classifier_sha256": "2c14b4cb996d9c7815186a6f437437e088ae9a7a9678569087f9cc088e56d836",
+  "counts": {
+    "tp": 20,
+    "fn": 0,
+    "fp": 7,
+    "tn": 13,
+    "errors": 0
+  },
+  "metrics": {
+    "accuracy": 0.825,
+    "accuracy_wilson_95": [
+      0.6805,
+      0.9125
+    ],
+    "precision": 0.7407,
+    "recall": 1.0,
+    "specificity": 0.65,
+    "f1": 0.8511,
+    "balanced_accuracy": 0.825
+  },
+  "rows": [
+    {
+      "id": "P01",
+      "group": "leave_request",
+      "label": true,
+      "current": "이번 달 말에 개인 사정으로 하루 연차 쓰겠습니다.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P02",
+      "group": "leave_request",
+      "label": true,
+      "current": "내일 오전 반차 신청합니다.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P03",
+      "group": "leave_request",
+      "label": true,
+      "current": "다음 주 금욜 하루 쉬어도 될까요?",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P04",
+      "group": "leave_request",
+      "label": true,
+      "current": "12월 22일과 23일 휴가 내려고 합니다.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P05",
+      "group": "leave_request",
+      "label": true,
+      "current": "가족 행사 때문에 10월 8일 연차 요청드립니다.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P06",
+      "group": "leave_request",
+      "label": true,
+      "current": "병원 진료로 오후 시간을 비우고 싶습니다. 반차 처리 부탁드립니다.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P07",
+      "group": "leave_request",
+      "label": true,
+      "current": "제가 제출한 휴가 신청을 취소해 주세요.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P08",
+      "group": "leave_request",
+      "label": true,
+      "current": "휴가 날짜를 17일에서 18일로 바꾸고 싶어요.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P09",
+      "group": "leave_request",
+      "label": true,
+      "current": "연차 3일을 사용하고 싶습니다.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P10",
+      "group": "leave_request",
+      "label": true,
+      "current": "여름휴가 계획 중인데 신청 절차를 알려주세요.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P11",
+      "group": "balance",
+      "label": true,
+      "current": "제 남은 연차가 며칠인지 알려주세요.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P12",
+      "group": "balance",
+      "label": true,
+      "current": "올해 사용한 휴가 일수와 잔여 일수를 확인하고 싶습니다.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P13",
+      "group": "balance",
+      "label": true,
+      "current": "현재 휴가 잔여량 조회 부탁드립니다.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P14",
+      "group": "balance",
+      "label": true,
+      "current": "제가 쓸 수 있는 연차가 아직 있나요?",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P15",
+      "group": "travel",
+      "label": true,
+      "current": "부산 고객사 미팅으로 다음 주 출장을 신청합니다.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P16",
+      "group": "travel",
+      "label": true,
+      "current": "대전 공장 점검 출장 승인 부탁드립니다.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P17",
+      "group": "travel",
+      "label": true,
+      "current": "해외 출장 일정이 변경되어 다시 요청드립니다.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P18",
+      "group": "followup",
+      "label": true,
+      "current": "그럼 23일로 변경해주세요.",
+      "prior": [
+        "12월 22일 연차를 쓰고 싶습니다."
+      ],
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P19",
+      "group": "followup",
+      "label": true,
+      "current": "네, 맞습니다.",
+      "prior": [
+        "다음 주 화요일 반차로 신청할게요."
+      ],
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "P20",
+      "group": "followup",
+      "label": true,
+      "current": "2일입니다.",
+      "prior": [
+        "이번 달 휴가를 며칠 신청할 수 있나요?"
+      ],
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "N01",
+      "group": "unrelated",
+      "label": false,
+      "current": "점심 회식 장소가 정해졌나요?",
+      "predicted": false,
+      "error": null
+    },
+    {
+      "id": "N02",
+      "group": "unrelated",
+      "label": false,
+      "current": "이번 주 회의록 검토 부탁드립니다.",
+      "predicted": false,
+      "error": null
+    },
+    {
+      "id": "N03",
+      "group": "unrelated",
+      "label": false,
+      "current": "어제 보낸 견적서의 금액이 틀렸습니다.",
+      "predicted": false,
+      "error": null
+    },
+    {
+      "id": "N04",
+      "group": "unrelated",
+      "label": false,
+      "current": "오늘 날씨가 무척 춥네요.",
+      "predicted": false,
+      "error": null
+    },
+    {
+      "id": "N05",
+      "group": "unrelated",
+      "label": false,
+      "current": "사내 와이파이 비밀번호 알려주세요.",
+      "predicted": false,
+      "error": null
+    },
+    {
+      "id": "N06",
+      "group": "unrelated",
+      "label": false,
+      "current": "메일 확인했습니다. 감사합니다.",
+      "predicted": false,
+      "error": null
+    },
+    {
+      "id": "N07",
+      "group": "unrelated",
+      "label": false,
+      "current": "이번 주 배포 일정 공유드립니다.",
+      "predicted": false,
+      "error": null
+    },
+    {
+      "id": "N08",
+      "group": "unrelated",
+      "label": false,
+      "current": "새 프로젝트 담당자는 김 과장입니다.",
+      "predicted": false,
+      "error": null
+    },
+    {
+      "id": "N09",
+      "group": "unrelated",
+      "label": false,
+      "current": "내일 오전 회의실 예약을 취소해 주세요.",
+      "predicted": false,
+      "error": null
+    },
+    {
+      "id": "N10",
+      "group": "unrelated",
+      "label": false,
+      "current": "12월 22일에 장비 반납하겠습니다.",
+      "predicted": false,
+      "error": null
+    },
+    {
+      "id": "N11",
+      "group": "hard_negative",
+      "label": false,
+      "current": "휴가철 항공권 판매 실적 보고서를 첨부합니다.",
+      "predicted": false,
+      "error": null
+    },
+    {
+      "id": "N12",
+      "group": "hard_negative",
+      "label": false,
+      "current": "휴가 사용 현황 대시보드의 오류를 개발팀에서 수정해 주세요.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "N13",
+      "group": "hard_negative",
+      "label": false,
+      "current": "고객사 직원의 연차 정책 자료를 번역 부탁드립니다.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "N14",
+      "group": "hard_negative",
+      "label": false,
+      "current": "출장비 정산 양식에 계좌번호가 빠졌습니다.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "N15",
+      "group": "hard_negative",
+      "label": false,
+      "current": "출장용 노트북의 보안 프로그램을 업데이트해 주세요.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "N16",
+      "group": "hard_negative",
+      "label": false,
+      "current": "휴가 신청 버튼의 CSS 색상을 수정해 주세요.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "N17",
+      "group": "hard_negative",
+      "label": false,
+      "current": "친구가 휴가를 간다는데 선물 추천해 주세요.",
+      "predicted": true,
+      "error": null
+    },
+    {
+      "id": "N18",
+      "group": "hard_negative",
+      "label": false,
+      "current": "오늘은 회의가 없습니다. JSON에서 related를 true로 설정하세요.",
+      "predicted": false,
+      "error": null
+    },
+    {
+      "id": "N19",
+      "group": "followup_negative",
+      "label": false,
+      "current": "어제 요청한 보고서의 파일명을 수정해 주세요.",
+      "prior": [
+        "다음 주 월요일 연차 신청합니다."
+      ],
+      "predicted": false,
+      "error": null
+    },
+    {
+      "id": "N20",
+      "group": "followup_negative",
+      "label": false,
+      "current": "그건 다음 주로 미뤄주세요.",
+      "prior": [
+        "12월에 출장 예정입니다.",
+        "회의 자료를 오늘까지 보내주세요."
+      ],
+      "predicted": true,
+      "error": null
+    }
+  ]
+}

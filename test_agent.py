@@ -8,6 +8,7 @@ import unittest
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from http.server import ThreadingHTTPServer
+from unittest.mock import patch
 from urllib.request import Request, urlopen
 
 import agent
@@ -217,6 +218,7 @@ class AgentTests(unittest.TestCase):
 
     def test_mail_is_filed_only_after_the_employee_confirms(self):
         mail_agent.setup(self.db)
+        self.enterContext(patch.object(mail_agent, "mail_related", return_value=True))
         with self.db:
             self.db.execute("INSERT INTO employee_emails VALUES('ga@example.com','가')")
         def call(name, **args):
@@ -315,6 +317,88 @@ class AgentTests(unittest.TestCase):
         result, final, _, _ = mail_agent.run_tool(
             self.db, person, "propose", dict(leave, period="am"), ["10월 9일부터 13일까지 휴가"], today)
         self.assertIn("반차는 하루짜리", result["error"])
+        self.assertEqual(self.db.execute("SELECT COUNT(*) FROM requests").fetchone()[0], 0)
+
+    def test_balance_only_mail_never_enters_request_tools(self):
+        mail_agent.setup(self.db)
+        self.enterContext(patch.object(mail_agent, "mail_related", return_value=True))
+        with self.db:
+            self.db.execute("INSERT INTO employee_emails VALUES('ga@example.com','가')")
+        def unexpected_model(_):
+            self.fail("잔여일만 묻는 메일은 모델 도구 선택으로 보내면 안 됩니다")
+        today = date(2026, 12, 10)
+        for body in ("남은 연차 알려주실 수 있나요?", "제 남은 연차가 몇 개인지 알 수 있을까요?",
+                     "남은 휴가 며칠이에요?", "남은 연차 5일?"):
+            self.assertEqual(mail_agent.handle(self.db, "ga@example.com", body, unexpected_model, today),
+                             "남은 휴가일은 5일입니다.")
+        self.assertFalse(mail_agent.balance_only("내일 연차 쓰고 싶은데 남은 연차가 몇 일인가요?", today))
+        self.assertFalse(mail_agent.balance_only("남은 연차 알려주시고 휴가 신청도 할게요", today))
+        self.assertEqual(self.db.execute("SELECT COUNT(*) FROM requests").fetchone()[0], 0)
+
+    def test_model_question_cannot_invent_a_calendar_date(self):
+        person = self.db.execute("SELECT * FROM employees WHERE name='가'").fetchone()
+        _, question, keep, _ = mail_agent.run_tool(
+            self.db, person, "ask", {"question": "담주 금요일(12월 17일)에 쉬실 건가요?"},
+            ["담주 금욜 연차 하루요"], date(2026, 12, 10))
+        self.assertTrue(keep)
+        self.assertIn("2026-12-18", question)
+        self.assertNotIn("17일", question)
+        _, question, _, _ = mail_agent.run_tool(
+            self.db, person, "ask", {"question": "12월 17일에 쉬실 건가요?"},
+            ["휴가 쓸게요"], date(2026, 12, 10))
+        self.assertEqual(question, "신청할 날짜를 YYYY-MM-DD 형식으로 알려주세요.")
+
+    def test_mail_poller_reads_only_leave_subjects(self):
+        def message(subject, body):
+            item = mail_agent.EmailMessage()
+            item["Subject"] = subject
+            item["From"] = "ga@example.com"
+            item.set_content(body)
+            return item.as_bytes()
+        mails = {b"1": message("일반 문의", "첫 번째"), b"2": message("휴가 신청", "두 번째")}
+        class Inbox:
+            def __init__(self):
+                self.fetched, self.seen = [], []
+            def __enter__(self):
+                return self
+            def __exit__(self, *_):
+                pass
+            def login(self, *_):
+                pass
+            def select(self, *_):
+                pass
+            def search(self, *_):
+                return "OK", [b"1 2"]
+            def fetch(self, number, section):
+                self.fetched.append((number, section))
+                raw = mails[number]
+                if "HEADER.FIELDS" in section:
+                    raw = raw.split(b"\n\n", 1)[0] + b"\n\n"
+                return "OK", [(b"", raw)]
+            def store(self, number, *_):
+                self.seen.append(number)
+        inbox, bodies = Inbox(), []
+        with (patch.object(agent, "connect", return_value=self.db),
+              patch.object(mail_agent.imaplib, "IMAP4_SSL", return_value=inbox),
+              patch.object(mail_agent, "handle", side_effect=lambda _, __, body: bodies.append(body)),
+              patch.object(mail_agent.time, "sleep", side_effect=StopIteration),
+              patch.dict(mail_agent.os.environ, {"MAIL_USER": "bot@example.com", "MAIL_PASSWORD": "test",
+                                               "MAIL_TRUST_SENDER": "1"})):
+            with self.assertRaises(StopIteration):
+                mail_agent.run()
+        self.assertEqual(bodies, ["두 번째"])
+        self.assertEqual(inbox.seen, [b"2"])
+        self.assertEqual([number for number, section in inbox.fetched if section == "(BODY.PEEK[])"], [b"2"])
+
+    def test_unrelated_mail_stops_before_request_tools(self):
+        mail_agent.setup(self.db)
+        with self.db:
+            self.db.execute("INSERT INTO employee_emails VALUES('ga@example.com','가')")
+        with (patch.object(agent, "lm_json", side_effect=[{"related": False}, {"related": True}]),
+              patch.object(mail_agent, "lm_step", side_effect=AssertionError("신청 도구를 호출하면 안 됩니다"))):
+            self.assertIsNone(mail_agent.handle(self.db, "ga@example.com", "오늘 날씨 좋네요"))
+            self.assertEqual(mail_agent.handle(self.db, "ga@example.com", "남은 연차 알려주세요"),
+                             "남은 휴가일은 5일입니다.")
         self.assertEqual(self.db.execute("SELECT COUNT(*) FROM requests").fetchone()[0], 0)
 
     def test_periods_use_weekdays_and_are_decided_as_one_request(self):
