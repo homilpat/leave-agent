@@ -34,10 +34,12 @@ def connect():
             period TEXT NOT NULL, reason TEXT NOT NULL, evidence INTEGER NOT NULL,
             category TEXT NOT NULL, status TEXT NOT NULL, created TEXT NOT NULL,
             proof_status TEXT NOT NULL DEFAULT '', proof_file TEXT NOT NULL DEFAULT '',
-            evidence_note TEXT NOT NULL DEFAULT '');
+            evidence_note TEXT NOT NULL DEFAULT '', manual_review INTEGER NOT NULL DEFAULT 0);
         CREATE TABLE IF NOT EXISTS notices (
             id INTEGER PRIMARY KEY, employee TEXT NOT NULL, message TEXT NOT NULL,
             created TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS mail_settings (
+            id INTEGER PRIMARY KEY CHECK(id=1), admin_email TEXT NOT NULL);
     """)
     columns = {row[1] for row in db.execute("PRAGMA table_info(requests)")}
     if "proof_status" not in columns:
@@ -46,6 +48,8 @@ def connect():
         db.execute("ALTER TABLE requests ADD COLUMN proof_file TEXT NOT NULL DEFAULT ''")
     if "evidence_note" not in columns:
         db.execute("ALTER TABLE requests ADD COLUMN evidence_note TEXT NOT NULL DEFAULT ''")
+    if "manual_review" not in columns:
+        db.execute("ALTER TABLE requests ADD COLUMN manual_review INTEGER NOT NULL DEFAULT 0")
     if "end_day" not in columns:
         # A request covers day..end_day; requests saved before ranges were one day long.
         db.execute("ALTER TABLE requests ADD COLUMN end_day TEXT NOT NULL DEFAULT ''")
@@ -221,7 +225,7 @@ def used_leave(db, employee):
         "AND status NOT IN ('canceled','rejected')", (employee,)))
 
 
-def submit(db, items, classifier=None):
+def submit(db, items, classifier=None, manager_only=False):
     if not isinstance(items, list) or not items:
         raise ValueError("비어 있지 않은 JSON 배열이 필요합니다")
     items = [validate(x) for x in items]
@@ -262,12 +266,12 @@ def submit(db, items, classifier=None):
         for i, item in enumerate(items):
             department = people[item["employee"]]["department"]
             # Normal requests wait for settle(): the 30% rule is applied a day later to everything collected.
-            status = "rejected" if i in rejected else "priority_review" if i in exceptions else "manager_review" if i in uncertain else "pending"
+            status = "rejected" if i in rejected else "priority_review" if i in exceptions else "manager_review" if manager_only or i in uncertain else "pending"
             proof_status = "pending" if status != "rejected" and item["kind"] == "leave" and categories[i] == "family_event" else ""
-            cursor = db.execute("INSERT INTO requests(employee,department,day,end_day,kind,period,reason,evidence,category,status,created,proof_status,evidence_note) "
-                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", (item["employee"], department, item["day"], item["end_day"], item["kind"],
+            cursor = db.execute("INSERT INTO requests(employee,department,day,end_day,kind,period,reason,evidence,category,status,created,proof_status,evidence_note,manual_review) "
+                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (item["employee"], department, item["day"], item["end_day"], item["kind"],
                 item["period"], item["reason"], int(item.get("evidence", False)), categories[i], status, now(), proof_status,
-                item.get("evidence_note", "").strip()))
+                item.get("evidence_note", "").strip(), int(manager_only)))
             notify(db, item["employee"], f"신청 #{cursor.lastrowid}: 잔여 휴가일 부족으로 반려" if status == "rejected" else f"신청 #{cursor.lastrowid}: {status}")
             if proof_status:
                 notify(db, item["employee"], f"신청 #{cursor.lastrowid}: 복귀 후 친인척 경조사 증빙서를 제출해야 합니다. 책임자가 확인합니다.")
@@ -305,7 +309,7 @@ def settle(db, at=None):
 
 def offer_waiters(db, department, start, end):
     for row in db.execute("SELECT * FROM requests WHERE department=? AND day<=? AND end_day>=? "
-                          "AND status='manager_review' AND (category='other' OR "
+                          "AND status='manager_review' AND manual_review=0 AND (category='other' OR "
                           "(kind='trip' AND category='important_trip' AND evidence=0)) ORDER BY id",
                           (department, end, start)).fetchall():
         if fits(db, department, row["day"], row["end_day"], row["period"]):

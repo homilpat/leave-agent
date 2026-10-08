@@ -50,6 +50,7 @@
         <section class="card"><div class="cardhead"><h2>신청 현황</h2><span id="row-count">0건</span></div><div class="toolbar"><span class="hint" style="margin:0">승인·취소 시 CSV가 갱신됩니다.</span><select id="status-filter" aria-label="상태 필터"><option value="">전체 상태</option><option value="pending">자동 승인 대기</option><option value="approved">승인</option><option value="manager_review">책임자 확인</option><option value="priority_review">우선 승인 권고</option><option value="offered">진행 의사 확인</option><option value="rejected">반려</option><option value="canceled">취소</option></select></div><div class="tablewrap"><table><thead><tr><th>번호 / 신청자</th><th>일정</th><th>구분</th><th>상태</th><th>복귀 후 증빙</th><th>처리</th></tr></thead><tbody id="request-rows"></tbody></table></div></section>
         <section class="card"><div class="cardhead"><h2>알림 기록</h2><span>최근 30건</span></div><div id="notices" class="body"></div></section>
       </div><div class="stack">
+        <section class="card"><div class="cardhead"><h2>관리자 수신 메일</h2></div><form id="admin-mail-form" class="body"><div class="field"><label for="admin-mail">메일 주소</label><input id="admin-mail" type="email" placeholder="manager@example.com" required></div><p id="mail-status" class="hint"></p><div class="actions"><button class="secondary" type="submit">등록</button></div></form></section>
         <section class="card"><div class="cardhead"><h2>시연 데이터 설정</h2></div><div class="body setup">
           <form id="department-form" class="inline"><div class="field"><label for="dept-name">부서</label><input id="dept-name" placeholder="개발팀" required></div><div class="field"><label for="dept-count">총인원</label><input id="dept-count" type="number" min="1" value="10" required></div><button class="secondary" type="submit">저장</button></form>
           <div class="divider"></div>
@@ -59,13 +60,14 @@
     </section>
   </main><div id="toast" class="toast" hidden role="status"></div>
   <script>
-    const $=id=>document.getElementById(id);let state={departments:[],employees:[],requests:[],notices:[]},batch=[];
+    const $=id=>document.getElementById(id);let state={departments:[],employees:[],requests:[],notices:[]},mine={requests:[],notices:[]},batch=[];
     const span=x=>x.end_day&&x.end_day!==x.day?x.day+' ~ '+x.end_day:x.day;
     const labels={pending:'자동 승인 대기',approved:'승인',manager_review:'책임자 확인',priority_review:'우선 승인 권고',offered:'진행 의사 확인',canceled:'취소',rejected:'반려'};
     const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     function toast(message,error=false){const el=$('toast');el.textContent=message;el.className='toast'+(error?' error':'');el.hidden=false;clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.hidden=true,4500)}
     async function api(path,data){const res=await fetch(path,{method:data===undefined?'GET':'POST',headers:{'Content-Type':'application/json'},body:data===undefined?undefined:JSON.stringify(data)});const body=await res.json();if(!res.ok)throw Error(body.error||'요청 실패');return body}
-    async function refresh(){state=await api('/api/state');render()}
+    async function refresh(){state=await api(view==='manager'?'/api/admin/state':'/api/state');render();if(view==='apply')await loadMine()}
+    async function loadMine(){const employee=$('request-employee').value.trim();mine={requests:[],notices:[]};if(state.employees.some(x=>x.name===employee)){const result=await api('/api/my?employee='+encodeURIComponent(employee));if($('request-employee').value.trim()===employee)mine=result}renderMine()}
     function options(select,items){const current=select.value;select.innerHTML='<option value="">부서 선택</option>'+items.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');if(items.includes(current))select.value=current}
     function updateSelectedDept(){const name=$('request-employee').value.trim(),person=state.employees.find(x=>x.name===name);$('selected-dept').textContent=person?person.department:name?'등록된 직원 정보가 없습니다':'이름을 입력하세요'}
     function updateTripFields(){const trip=$('request-kind').value==='trip';$('trip-evidence-row').hidden=!trip;if(!trip)$('request-evidence').checked=false;const needed=trip&&$('request-evidence').checked;$('evidence-note-field').hidden=!needed;$('request-evidence-note').required=needed;if(!needed)$('request-evidence-note').value=''}
@@ -97,7 +99,7 @@
     function renderMine(){
       const body=$('mine'),employee=$('request-employee').value.trim();body.replaceChildren();
       if(!employee){const p=document.createElement('p');p.className='empty';p.textContent='신청자를 선택하면 내역을 볼 수 있습니다.';body.append(p);return}
-      const rows=state.requests.filter(x=>x.employee===employee),today=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+      const rows=mine.requests,today=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
       if(!rows.length){const p=document.createElement('p');p.className='empty';p.textContent='아직 신청 내역이 없습니다.';body.append(p)}
       for(const x of rows){
         const item=document.createElement('div');item.className='mineitem';
@@ -114,19 +116,19 @@
         if(x.proof_status==='verified'){const note=document.createElement('div');note.className='meta';note.textContent='증빙서 확인 완료';item.append(note)}
         body.append(item);
       }
-      const notes=state.notices.filter(x=>x.employee===employee).slice(0,5);
+      const notes=mine.notices;
       if(notes.length){const heading=document.createElement('h3');heading.textContent='최근 알림';heading.style.fontSize='1rem';body.append(heading);for(const x of notes){const p=document.createElement('p');p.className='meta';p.textContent=x.message;body.append(p)}}
     }
-    function render(){$('employee-suggestions').innerHTML=state.employees.map(x=>`<option value="${esc(x.name)}"></option>`).join('');options($('emp-dept'),state.departments.map(x=>x.name));updateSelectedDept();renderMine();
-      const counts={};state.requests.forEach(x=>counts[x.status]=(counts[x.status]||0)+1);
-      $('count-all').textContent=state.requests.length;$('count-approved').textContent=counts.approved||0;$('count-review').textContent=(counts.manager_review||0)+(counts.priority_review||0);$('count-offered').textContent=counts.offered||0;
+    function render(){$('employee-suggestions').innerHTML=state.employees.map(x=>`<option value="${esc(x.name)}"></option>`).join('');options($('emp-dept'),state.departments.map(x=>x.name));updateSelectedDept();renderMine();if(view==='manager'){$('admin-mail').value=state.admin_email||'';$('mail-status').textContent=state.mail_ready?'메일 수신 설정 완료 · 휴가 신청은 책임자 확인 대기로 자동 접수됩니다.':'MAIL_USER와 MAIL_PASSWORD를 설정하고 등록 주소와 일치시켜 웹 서버를 실행하세요.'}
+      const counts=state.counts||{};if(!state.counts)state.requests.forEach(x=>counts[x.status]=(counts[x.status]||0)+1);
+      $('count-all').textContent=Object.values(counts).reduce((a,b)=>a+b,0);$('count-approved').textContent=counts.approved||0;$('count-review').textContent=(counts.manager_review||0)+(counts.priority_review||0);$('count-offered').textContent=counts.offered||0;
       const rows=state.requests.filter(x=>!$('status-filter').value||x.status===$('status-filter').value);$('row-count').textContent=`${rows.length}건`;
       renderRows(rows);
       $('notices').innerHTML=state.notices.length?state.notices.map(x=>`<div class="notice"><b>${esc(x.employee)}</b> · ${esc(x.message)}<time>${esc(x.created.replace('T',' ').slice(0,16))}</time></div>`).join(''):'<p class="empty">아직 알림이 없습니다.</p>';
       $('queue').innerHTML=batch.length?batch.map((x,i)=>`<div class="queueitem"><span>${esc(x.employee)} · ${esc(span(x))} · ${x.kind==='leave'?'휴가':'출장'} · ${{full:'전일',am:'오전',pm:'오후'}[x.period]}</span><button class="mini warn" type="button" data-remove="${i}">삭제</button></div>`).join(''):'<p class="empty">추가한 신청이 없습니다.</p>';
     }
     $('request-day').value=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);$('request-end').value=$('request-day').value;$('request-day').addEventListener('change',()=>{if($('request-end').value<$('request-day').value)$('request-end').value=$('request-day').value});
-    $('request-employee').addEventListener('input',()=>{updateSelectedDept();renderMine()});
+    $('request-employee').addEventListener('input',()=>{updateSelectedDept();loadMine().catch(e=>toast(e.message,true))});
     $('request-kind').addEventListener('change',updateTripFields);
     $('request-evidence').addEventListener('change',updateTripFields);
     $('request-form').addEventListener('submit',e=>{e.preventDefault();const item={employee:$('request-employee').value.trim(),day:$('request-day').value,end_day:$('request-end').value||$('request-day').value,kind:$('request-kind').value,period:$('request-period').value,reason:$('request-reason').value.trim(),evidence:$('request-evidence').checked,evidence_note:$('request-evidence-note').value.trim()};if(!state.employees.some(x=>x.name===item.employee))return toast('등록된 직원 이름을 입력하세요. 담당자 페이지에서 먼저 직원 등록이 필요합니다.',true);if(item.end_day<item.day)return toast('종료일이 시작일보다 빠릅니다',true);if(item.end_day!==item.day&&item.period!=='full')return toast('여러 날 신청은 전일만 가능합니다',true);if(!item.reason)return toast('사유를 입력하세요',true);if(batch.some(x=>x.employee===item.employee&&x.day<=item.end_day&&x.end_day>=item.day))return toast('같은 직원의 기간이 겹치는 신청이 이미 있습니다',true);batch.push(item);$('request-reason').value='';$('request-evidence').checked=false;$('request-evidence-note').value='';updateTripFields();render();toast('신청을 묶음에 추가했습니다')});
@@ -134,6 +136,7 @@
     $('submit-batch').addEventListener('click',async()=>{if(!batch.length)return toast('신청을 먼저 추가하세요',true);try{const result=await api('/api/submit',batch);batch=[];await refresh();toast(`${result.results.length}건 처리했습니다`)}catch(e){toast(e.message,true)}});
     $('department-form').addEventListener('submit',async e=>{e.preventDefault();try{await api('/api/department',{name:$('dept-name').value,headcount:Number($('dept-count').value)});await refresh();toast('부서를 저장했습니다')}catch(e){toast(e.message,true)}});
     $('employee-form').addEventListener('submit',async e=>{e.preventDefault();try{await api('/api/employee',{name:$('emp-name').value,department:$('emp-dept').value,leave_days:Number($('emp-days').value)});$('emp-name').value='';await refresh();toast('직원을 저장했습니다')}catch(e){toast(e.message,true)}});
+    $('admin-mail-form').addEventListener('submit',async e=>{e.preventDefault();try{await api('/api/admin/mail',{email:$('admin-mail').value});await refresh();toast('관리자 수신 메일을 등록했습니다')}catch(error){toast(error.message,true)}});
     $('status-filter').addEventListener('change',render);
     async function changeFrom(e){const button=e.target.closest('[data-action]');if(!button)return;const {id,action}=button.dataset;button.disabled=true;try{await api('/api/change',{id:Number(id),action});await refresh();toast('상태를 변경했습니다')}catch(error){button.disabled=false;toast(error.message,true)}}
     $('request-rows').addEventListener('click',changeFrom);

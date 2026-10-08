@@ -4,5 +4,6 @@ agent.db
 agent.db-*
 출타자 현황.csv
 proofs/
+certs/
 graphy-out/
 .serena/

@@ -2,6 +2,8 @@
 
 import csv
 import json
+import os
+import ssl
 import tempfile
 import threading
 import unittest
@@ -10,6 +12,7 @@ from pathlib import Path
 from http.server import ThreadingHTTPServer
 from unittest.mock import patch
 from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 
 import agent
 import mail_agent
@@ -171,6 +174,8 @@ class AgentTests(unittest.TestCase):
             agent.submit_proof(self.db, result["id"], b"%PDF-1.4\nDemo certificate")
 
     def test_web_page_and_api_flow(self):
+        self.enterContext(patch.dict(os.environ, {"ADMIN_PASSWORD": "secret", "MAIL_USER": "bot@example.com", "MAIL_PASSWORD": "test"}))
+        admin = {"Authorization": "Basic YWRtaW46c2VjcmV0"}
         server = ThreadingHTTPServer(("127.0.0.1", 0), web.Handler)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
@@ -182,14 +187,47 @@ class AgentTests(unittest.TestCase):
                 page = response.read().decode()
                 self.assertIn("신청 접수", page)
                 self.assertIn('<input id="request-employee" type="text"', page)
-            for route in ("/apply", "/manager"):
-                with urlopen(base + route) as response:
+            with urlopen(base + "/apply") as response:
+                self.assertEqual(response.status, 200)
+            for route in ("/manager", "/api/admin/state"):
+                with self.assertRaises(HTTPError) as denied:
+                    urlopen(base + route)
+                self.assertEqual(denied.exception.code, 401)
+                with self.assertRaises(HTTPError) as denied:
+                    urlopen(Request(base + route, headers={"Authorization": "Basic YWRtaW46d3Jvbmc="}))
+                self.assertEqual(denied.exception.code, 401)
+                with urlopen(Request(base + route, headers=admin)) as response:
                     self.assertEqual(response.status, 200)
+            for route, payload in (("/api/department", {"name": "인사", "headcount": 3}),
+                                   ("/api/employee", {"name": "가", "department": "개발", "leave_days": 99}),
+                                   ("/api/verify", {"id": 1}),
+                                   ("/api/admin/mail", {"email": "bot@example.com"})):
+                request = Request(base + route, data=json.dumps(payload).encode(),
+                                  headers={"Content-Type": "application/json"})
+                with self.assertRaises(HTTPError) as denied:
+                    urlopen(request)
+                self.assertEqual(denied.exception.code, 401)
+            self.assertIsNone(self.db.execute("SELECT 1 FROM departments WHERE name='인사'").fetchone())
+            self.assertEqual(self.db.execute("SELECT leave_days FROM employees WHERE name='가'").fetchone()[0], 5)
+            request = Request(base + "/api/admin/mail", data=b'{"email":"bot@example.com"}',
+                              headers={"Content-Type": "application/json", **admin})
+            with urlopen(request) as response:
+                self.assertTrue(json.load(response)["ok"])
+            with urlopen(Request(base + "/api/admin/state", headers=admin)) as response:
+                registered = json.load(response)
+                self.assertEqual(registered["admin_email"], "bot@example.com")
+                self.assertTrue(registered["mail_ready"])
             request = Request(base + "/api/submit", data=json.dumps([self.item("가")]).encode(),
                               headers={"Content-Type": "application/json"})
             with urlopen(request) as response:
                 self.assertEqual(json.load(response)["results"][0]["status"], "pending")
             with urlopen(base + "/api/state") as response:
+                public = json.load(response)
+                self.assertEqual(public["requests"], [])
+                self.assertNotIn("leave_days", public["employees"][0])
+            with urlopen(base + "/api/my?employee=%EA%B0%80") as response:
+                self.assertEqual(len(json.load(response)["requests"]), 1)
+            with urlopen(Request(base + "/api/admin/state", headers=admin)) as response:
                 self.assertEqual(len(json.load(response)["requests"]), 1)
             past = dict(self.item("나", reason="누나 결혼식"), day=(date.today()-timedelta(days=1)).isoformat())
             request = Request(base + "/api/submit", data=json.dumps([past]).encode(),
@@ -197,21 +235,52 @@ class AgentTests(unittest.TestCase):
             with urlopen(request) as response:
                 proof_id = json.load(response)["results"][0]["id"]
             request = Request(base + "/api/change", data=json.dumps({"id": proof_id, "action": "approve"}).encode(),
-                              headers={"Content-Type": "application/json"})
+                               headers={"Content-Type": "application/json"})
+            with self.assertRaises(HTTPError) as denied:
+                urlopen(request)
+            self.assertEqual(denied.exception.code, 401)
+            request.add_header("Authorization", admin["Authorization"])
             with urlopen(request) as response:
                 self.assertEqual(json.load(response)["status"], "approved")
             request = Request(base + f"/api/proof/{proof_id}", data=b"%PDF-1.4\nDemo certificate",
                               headers={"Content-Type": "application/pdf"})
             with urlopen(request) as response:
                 self.assertTrue(json.load(response)["ok"])
-            with urlopen(base + f"/api/proof/{proof_id}") as response:
+            with self.assertRaises(HTTPError) as denied:
+                urlopen(base + f"/api/proof/{proof_id}")
+            self.assertEqual(denied.exception.code, 401)
+            with urlopen(Request(base + f"/api/proof/{proof_id}", headers=admin)) as response:
                 self.assertTrue(response.read().startswith(b"%PDF-"))
             request = Request(base + "/api/verify", data=json.dumps({"id": proof_id}).encode(),
-                              headers={"Content-Type": "application/json"})
+                              headers={"Content-Type": "application/json", **admin})
             with urlopen(request) as response:
                 self.assertTrue(json.load(response)["ok"])
         finally:
             agent.lm_categories = old_classifier
+            server.shutdown()
+            server.server_close()
+            thread.join()
+
+    def test_https_listener(self):
+        with patch.dict(os.environ, {"TLS_CERT_FILE": "", "TLS_KEY_FILE": ""}):
+            with self.assertRaises(ValueError):
+                web.make_server(0)
+        cert = Path(__file__).parent / "certs" / "localhost.crt"
+        key = cert.with_suffix(".key")
+        if not cert.exists() or not key.exists():
+            self.skipTest("로컬 시험용 TLS 인증서가 없음")
+        with patch.dict(os.environ, {"TLS_CERT_FILE": str(cert), "TLS_KEY_FILE": str(key)}):
+            server = web.make_server(0)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            context = ssl.create_default_context(cafile=str(cert))
+            with urlopen(f"https://127.0.0.1:{server.server_port}/apply", context=context) as response:
+                self.assertEqual(response.status, 200)
+            with self.assertRaises(OSError):
+                urlopen(f"http://127.0.0.1:{server.server_port}/apply", timeout=2)
+            self.assertGreaterEqual(server.socket.context.minimum_version, ssl.TLSVersion.TLSv1_2)
+        finally:
             server.shutdown()
             server.server_close()
             thread.join()
@@ -259,6 +328,30 @@ class AgentTests(unittest.TestCase):
         self.assertIn("접수 결과", done)
         row = self.db.execute("SELECT employee,day,period,status FROM requests").fetchone()
         self.assertEqual(tuple(row), ("가", "2026-10-01", "pm", "pending"))
+        self.assertIsNone(self.db.execute("SELECT 1 FROM mail_drafts").fetchone())
+
+    def test_registered_admin_mailbox_files_for_manager_review_without_confirmation(self):
+        mail_agent.setup(self.db)
+        with self.db:
+            self.db.execute("INSERT INTO employee_emails VALUES('ga@example.com','가')")
+            self.db.execute("INSERT INTO mail_settings VALUES(1,'bot@example.com')")
+        self.enterContext(patch.object(mail_agent, "mail_related", return_value=True))
+        self.enterContext(patch.object(agent, "lm_categories", return_value=["other"]))
+        def propose(_):
+            return {"content": "", "tool_calls": [{"id": "1", "function": {"name": "propose", "arguments":
+                    json.dumps({"kind": "leave", "period": "full", "reason": "개인 휴가"})}}]}
+        reply = mail_agent.handle(self.db, "ga@example.com", "12월 22일 연차 신청합니다", propose,
+                                  date(2026, 10, 8), auto_file=True)
+        self.assertIn("접수 결과: 책임자 확인 대기", reply)
+        row = self.db.execute("SELECT status,day FROM requests").fetchone()
+        self.assertEqual(tuple(row), ("manager_review", "2026-12-22"))
+        self.assertEqual(agent.settle(self.db, datetime(2026, 12, 20).astimezone()), 0)
+        other = agent.submit(self.db, [dict(self.item("나"), day="2026-12-22")],
+                             classifier=lambda _: ["other"])[0]
+        agent.settle(self.db, datetime(2026, 12, 20).astimezone())
+        agent.change(self.db, other["id"], "cancel")
+        self.assertEqual(self.db.execute("SELECT status FROM requests WHERE employee='가'").fetchone()[0],
+                         "manager_review")
         self.assertIsNone(self.db.execute("SELECT 1 FROM mail_drafts").fetchone())
 
     def test_mail_dates_are_resolved_by_code(self):
@@ -349,6 +442,8 @@ class AgentTests(unittest.TestCase):
         self.assertEqual(question, "신청할 날짜를 YYYY-MM-DD 형식으로 알려주세요.")
 
     def test_mail_poller_reads_only_leave_subjects(self):
+        with self.db:
+            self.db.execute("INSERT INTO mail_settings VALUES(1,'bot@example.com')")
         def message(subject, body):
             item = mail_agent.EmailMessage()
             item["Subject"] = subject
@@ -380,13 +475,13 @@ class AgentTests(unittest.TestCase):
         inbox, bodies = Inbox(), []
         with (patch.object(agent, "connect", return_value=self.db),
               patch.object(mail_agent.imaplib, "IMAP4_SSL", return_value=inbox),
-              patch.object(mail_agent, "handle", side_effect=lambda _, __, body: bodies.append(body)),
+              patch.object(mail_agent, "handle", side_effect=lambda _, __, body, **kw: bodies.append((body, kw["auto_file"]))),
               patch.object(mail_agent.time, "sleep", side_effect=StopIteration),
               patch.dict(mail_agent.os.environ, {"MAIL_USER": "bot@example.com", "MAIL_PASSWORD": "test",
                                                "MAIL_TRUST_SENDER": "1"})):
             with self.assertRaises(StopIteration):
-                mail_agent.run()
-        self.assertEqual(bodies, ["두 번째"])
+                mail_agent.run(require_admin=True)
+        self.assertEqual(bodies, [("두 번째", True)])
         self.assertEqual(inbox.seen, [b"2"])
         self.assertEqual([number for number, section in inbox.fetched if section == "(BODY.PEEK[])"], [b"2"])
 
